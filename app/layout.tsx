@@ -13,11 +13,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({children,}: Readonly<{children: React.ReactNode;}>) {
 
-  const isUserAuthenticated = await isAuthenticated();
 
-  if(!isUserAuthenticated){
-    redirect("/sign-in");
-  }
 
   return (
     <html lang="en" className="h-full">

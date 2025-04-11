@@ -1,6 +1,5 @@
-
 import { initializeApp, getApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -16,6 +15,18 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
+// Get auth instance
 export const auth = getAuth(app);
+
+// Optional: Configure persistence for better user experience
+// setPersistence(auth, browserLocalPersistence)
+//   .catch((error) => {
+//     console.error("Auth persistence error:", error);
+//   });
+
+// Export Firestore
 export const db = getFirestore(app);
+
+// Export Google provider for easy access
+export const googleProvider = new GoogleAuthProvider();
 
