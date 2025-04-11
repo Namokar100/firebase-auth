@@ -3,6 +3,8 @@
 import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
 import { SignUpFormValues } from "../validations/auth";
+import { sendVerificationEmailSMTP } from "../email";
+import { generateVerificationToken } from "../token";
 
 const ONE_WEEK = 60 * 60 * 24 * 7;
 
@@ -35,28 +37,34 @@ export async function sendVerificationEmail(email: string) {
         if (userRecord.emailVerified) {
             return {
                 success: false,
-                message: 'Email is already verified'
+                message: 'Email is already verified, Please log in'
             };
         }
 
-        // Use the deployment URL or localhost for development
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        const continueUrl = `${baseUrl}/api/auth/verify-email`;
+        // Get user's name if available
+        let userName = '';
+        try {
+            const userDoc = await db.collection('users').doc(userRecord.uid).get();
+            if (userDoc.exists) {
+                userName = userDoc.data()?.name || '';
+            }
+        } catch (error) {
+            console.log('Error getting user name:', error);
+        }
 
-        // Generate verification link with redirect to sign-in page
-        const verificationLink = await auth.generateEmailVerificationLink(
-            email, 
-            { url: continueUrl }
-        );
+        // Generate our custom verification token
+        const token = await generateVerificationToken(email);
         
-        // In a real application, you would send an email with the verification link
-        // using a service like SendGrid, Mailgun, etc.
-        console.log(`Verification link for ${email}: ${verificationLink}`);
+        // Send email via Google SMTP
+        const emailResult = await sendVerificationEmailSMTP(email, token, userName);
+        
+        if (!emailResult.success) {
+            throw new Error(emailResult.error || 'Failed to send verification email');
+        }
         
         return {
             success: true,
             message: 'Verification email sent. Please check your inbox.',
-            link: verificationLink // Only for development purposes
         };
     } catch (error: any) {
         console.error("Error sending verification email:", error);
@@ -92,9 +100,19 @@ export async function signUp(params: SignUpParams) {
             createdAt: new Date(),
         });
 
-        // If not OAuth user (regular email signup), send verification email
+        // If not OAuth user (regular email signup), send verification email using our custom method
         if (!isOAuthUser && !emailVerified) {
-            await sendVerificationEmail(email);
+            try {
+                const verificationResult = await sendVerificationEmail(email);
+                
+                if (!verificationResult.success) {
+                    console.error("Failed to send verification email:", verificationResult.message);
+                    // Continue anyway so at least the user is created
+                }
+            } catch (emailError) {
+                console.error("Error sending verification email:", emailError);
+                // Continue anyway so at least the user is created
+            }
         }
 
         return {

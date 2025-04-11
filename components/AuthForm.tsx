@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import {
@@ -20,7 +20,6 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  sendEmailVerification,
 } from "firebase/auth";
 import { signIn, signUp, sendVerificationEmail } from "@/lib/actions/auth.action";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,12 +40,75 @@ export function AuthForm({
 }: AuthFormProps) {
   const isSignIn = type === "signin";
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   // States
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+  
+  // Ref to track if toast was shown
+  const toastShownRef = useRef(false);
+
+  // Check for email verification from URL params
+  useEffect(() => {
+    // Prevent showing toast multiple times in development mode due to StrictMode
+    if (toastShownRef.current) return;
+    
+    // Check if the user has been redirected after email verification
+    const verified = searchParams.get('verified');
+    if (verified === 'true') {
+      // Ensure toast is displayed
+      setTimeout(() => {
+        toast.success('Email verified successfully. Please login to continue.', {
+          id: 'verified-success',
+          duration: 5000
+        });
+        toastShownRef.current = true;
+      }, 100);
+    }
+    
+    // Check for any error messages
+    const error = searchParams.get('error');
+    if (error) {
+      // Ensure toast is displayed
+      setTimeout(() => {
+        switch(error) {
+          case 'invalid_token':
+            toast.error('Invalid verification link. Please request a new one.', {
+              id: 'invalid-token-error',
+              duration: 5000
+            });
+            break;
+          case 'expired_token':
+            toast.error('Verification link has expired. Please request a new one.', {
+              id: 'expired-token-error',
+              duration: 5000
+            });
+            break;
+          case 'user_update_failed':
+            toast.error('Failed to verify email. Please try again.', {
+              id: 'update-failed-error',
+              duration: 5000
+            });
+            break;
+          case 'verification_failed':
+            toast.error('Email verification failed. Please try again.', {
+              id: 'verification-failed-error',
+              duration: 5000
+            });
+            break;
+          default:
+            toast.error('An error occurred during verification. Please try again.', {
+              id: 'general-error',
+              duration: 5000
+            });
+        }
+        toastShownRef.current = true;
+      }, 100);
+    }
+  }, [searchParams]);
 
   // Form validation with Zod
   const {
@@ -126,32 +188,7 @@ export function AuthForm({
           signUpData.password
         );
         
-        try {
-          // Send email verification
-          await sendEmailVerification(userCredential.user);
-          
-          // Start resend timer (60 seconds) after sending verification email
-          setResendTimer(60);
-          const timerInterval = setInterval(() => {
-            setResendTimer((prevTimer) => {
-              if (prevTimer <= 1) {
-                clearInterval(timerInterval);
-                return 0;
-              }
-              return prevTimer - 1;
-            });
-          }, 1000);
-        } catch (verificationError: any) {
-          console.error("Error sending verification email:", verificationError);
-          if (verificationError.code === 'auth/too-many-requests' || 
-              verificationError.message?.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
-            toast.error("Too many verification attempts. Please try again later.");
-          } else {
-            toast.error("Failed to send verification email. Please try the resend option later.");
-          }
-        }
-        
-        // Call backend API to create user in database
+        // Call backend API to create user in database and send verification email
         const result = await signUp({
           uid: userCredential.user.uid,
           name: signUpData.name,
@@ -165,6 +202,18 @@ export function AuthForm({
           toast.error(errorMessage);
           return;
         }
+
+        // Start resend timer (60 seconds)
+        setResendTimer(60);
+        const timerInterval = setInterval(() => {
+          setResendTimer((prevTimer) => {
+            if (prevTimer <= 1) {
+              clearInterval(timerInterval);
+              return 0;
+            }
+            return prevTimer - 1;
+          });
+        }, 1000);
 
         // Show success message and verification info
         toast.success("Account created successfully. Please verify your email before signing in.");
