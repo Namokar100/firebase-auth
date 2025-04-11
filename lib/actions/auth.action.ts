@@ -17,6 +17,12 @@ interface SignInParams {
     idToken: string;
 }
 
+interface User {
+    name: string;
+    email: string;
+    id: string;
+  }
+
 export async function signUp(parmas: SignUpParams){
     const {uid, name, email } = parmas;
 
@@ -93,5 +99,36 @@ export async function signIn(parmas: SignInParams){
             message: 'Sign in failed'
         }
     }
+}
+
+export async function getCurrentUser(): Promise<User | null>{
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session')?.value;
+
+    if(!sessionCookie){
+        return null;
+    }
+    
+    try{
+        const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+        const userRecord = await db.collection('users').doc(decodedClaims.uid).get();
+
+        if(!userRecord.exists){
+            return null;
+        }
+
+        return {
+            ...userRecord.data(),
+            id: userRecord.id,
+        } as User;
+    } catch(e) {
+        console.error("Error getting current user", e);
+        return null;
+    }
+}
+
+export async function isAuthenticated(): Promise<boolean>{
+    const user = await getCurrentUser();
+    return !!user;
 }
 

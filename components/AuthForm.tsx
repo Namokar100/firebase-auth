@@ -94,7 +94,7 @@ export function AuthForm({
         });
 
         toast.success("Signed in successfully.");
-        router.push("/");
+        router.push("/home");
       }
     } catch (error: any) {
       console.error(error);
