@@ -20,9 +20,15 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  OAuthProvider,
+  sendEmailVerification,
 } from "firebase/auth";
-import { signIn, signUp } from "@/lib/actions/auth.action";
+import { signIn, signUp, sendVerificationEmail } from "@/lib/actions/auth.action";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { SignInFormValues, SignUpFormValues, signInSchema, signUpSchema } from "@/lib/validations/auth";
+import { AlertCircle, Check, Info } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FieldErrors } from "react-hook-form";
 
 interface AuthFormProps extends React.ComponentPropsWithoutRef<"div"> {
   type: "signin" | "signup";
@@ -36,74 +42,220 @@ export function AuthForm({
   const isSignIn = type === "signin";
   const router = useRouter();
   
-  // Form state
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  // States
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [resendTimer, setResendTimer] = useState(0);
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+  // Form validation with Zod
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    getValues,
+    reset,
+  } = useForm<SignUpFormValues | SignInFormValues>({
+    resolver: zodResolver(isSignIn ? signInSchema : signUpSchema),
+    defaultValues: isSignIn 
+      ? {
+          email: "",
+          password: "",
+        }
+      : {
+          name: "",
+          email: "",
+          password: "",
+        }
+  });
+  
+  // Handle resending verification email
+  const handleResendVerification = async () => {
+    const email = verificationEmail || getValues("email") as string;
+    
+    if (!email) {
+      toast.error("Email address is required");
+      return;
+    }
+    
+    try {
+      const result = await sendVerificationEmail(email);
+      
+      if (result.success) {
+        toast.success(result.message);
+        setVerificationSent(true);
+        
+        // Start resend timer (60 seconds)
+        setResendTimer(60);
+        const timerInterval = setInterval(() => {
+          setResendTimer((prevTimer) => {
+            if (prevTimer <= 1) {
+              clearInterval(timerInterval);
+              return 0;
+            }
+            return prevTimer - 1;
+          });
+        }, 1000);
+      } else {
+        // Check for too many attempts error
+        if (result.message?.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+          toast.error("Too many verification attempts. Please try again later.");
+        } else {
+          toast.error(result.message);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error sending verification email:", error);
+      if (error.message?.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+        toast.error("Too many verification attempts. Please try again later.");
+      } else {
+        toast.error("Failed to send verification email. Please try again.");
+      }
+    }
+  };
 
+  const onSubmit = async (data: SignUpFormValues | SignInFormValues) => {
     try {
       if (type === "signup") {
-        if (!name.trim()) {
-          setError("Name is required");
-          setIsLoading(false);
-          return;
-        }
+        const signUpData = data as SignUpFormValues;
         
         // Create user with Firebase
         const userCredential = await createUserWithEmailAndPassword(
           auth,
-          email,
-          password
+          signUpData.email,
+          signUpData.password
         );
-
+        
+        try {
+          // Send email verification
+          await sendEmailVerification(userCredential.user);
+          
+          // Start resend timer (60 seconds) after sending verification email
+          setResendTimer(60);
+          const timerInterval = setInterval(() => {
+            setResendTimer((prevTimer) => {
+              if (prevTimer <= 1) {
+                clearInterval(timerInterval);
+                return 0;
+              }
+              return prevTimer - 1;
+            });
+          }, 1000);
+        } catch (verificationError: any) {
+          console.error("Error sending verification email:", verificationError);
+          if (verificationError.code === 'auth/too-many-requests' || 
+              verificationError.message?.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+            toast.error("Too many verification attempts. Please try again later.");
+          } else {
+            toast.error("Failed to send verification email. Please try the resend option later.");
+          }
+        }
+        
         // Call backend API to create user in database
         const result = await signUp({
           uid: userCredential.user.uid,
-          name: name,
-          email,
-          password,
+          name: signUpData.name,
+          email: signUpData.email,
+          password: signUpData.password,
+          emailVerified: false,
         });
 
         if (!result || !result.success) {
           const errorMessage = result?.message || "Sign up failed. Please try again.";
           toast.error(errorMessage);
-          setError(errorMessage);
           return;
         }
 
-        toast.success("Account created successfully. Please sign in.");
-        router.push("/sign-in");
+        // Show success message and verification info
+        toast.success("Account created successfully. Please verify your email before signing in.");
+        setVerificationEmail(signUpData.email);
+        setVerificationSent(true);
+        reset();
       } else {
-        // Sign in with Firebase
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+        // Sign in process
+        const signInData = data as SignInFormValues;
+        
+        try {
+          // Sign in with Firebase
+          const userCredential = await signInWithEmailAndPassword(
+            auth,
+            signInData.email,
+            signInData.password
+          );
 
-        // Get ID token for backend authentication
-        const idToken = await userCredential.user.getIdToken();
-        if (!idToken) {
-          toast.error("Sign in Failed. Please try again.");
-          return;
+          // Get ID token for backend authentication
+          const idToken = await userCredential.user.getIdToken();
+          if (!idToken) {
+            toast.error("Sign in Failed. Please try again.");
+            return;
+          }
+
+          // Check if email is verified
+          if (!userCredential.user.emailVerified) {
+            toast.error("Please verify your email before signing in.");
+            setVerificationEmail(signInData.email);
+            setVerificationSent(false);
+            return;
+          }
+
+          // Call backend API to sign in
+          const result = await signIn({
+            email: signInData.email,
+            idToken,
+          });
+
+          if (!result.success) {
+            // Check if verification is needed
+            if (result.needsVerification) {
+              toast.error(result.message);
+              setVerificationEmail(result.email);
+              setVerificationSent(false);
+              return;
+            }
+            
+            toast.error(result.message);
+            return;
+          }
+
+          toast.success("Signed in successfully.");
+          router.push("/home");
+        } catch (error: any) {
+          // Special handling for unverified users
+          if (error.code === 'auth/invalid-login-credentials') {
+            // Check if user exists but email not verified
+            try {
+              const emailToCheck = signInData.email;
+              const result = await sendVerificationEmail(emailToCheck);
+              
+              if (result.success) {
+                toast.error("Please verify your email before signing in.");
+                setVerificationEmail(emailToCheck);
+                setVerificationSent(true);
+                
+                return;
+              }
+            } catch (verifyError) {
+              // Continue with normal error handling
+            }
+          }
+          
+          // Handle other Firebase auth errors
+          if (error.code) {
+            switch (error.code) {
+              case 'auth/user-not-found':
+              case 'auth/wrong-password':
+                toast.error('Invalid email or password.');
+                break;
+              case 'auth/too-many-requests':
+                toast.error('Too many failed login attempts. Please try again later.');
+                break;
+              default:
+                toast.error(`Authentication failed: ${error.message}`);
+            }
+          } else {
+            toast.error("Authentication failed. Please check your credentials.");
+          }
         }
-
-        // Call backend API to sign in
-        await signIn({
-          email,
-          idToken,
-        });
-
-        toast.success("Signed in successfully.");
-        router.push("/home");
       }
     } catch (error: any) {
       console.error(error);
@@ -112,31 +264,31 @@ export function AuthForm({
       if (error.code) {
         switch (error.code) {
           case 'auth/email-already-in-use':
-            setError('This email is already registered.');
+            toast.error('This email is already registered. Please sign in.');
             break;
           case 'auth/invalid-email':
-            setError('Invalid email address.');
-            break;
-          case 'auth/user-not-found':
-          case 'auth/wrong-password':
-            setError('Invalid email or password.');
+            toast.error('Invalid email address.');
             break;
           case 'auth/weak-password':
-            setError('Password is too weak.');
+            toast.error('Password is too weak.');
+            break;
+          case 'auth/too-many-requests':
+            toast.error('Too many requests. Please try again later.');
             break;
           default:
-            setError(`Authentication failed: ${error.message}`);
+            if (error.message?.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+              toast.error('Too many attempts. Please try again later.');
+            } else {
+              toast.error(`Authentication failed: ${error.message}`);
+            }
         }
       } else {
-        setError("Authentication failed. Please check your credentials.");
+        toast.error("Authentication failed. Please check your credentials.");
       }
-    } finally {
-      setIsLoading(false);
     }
   };
   
   const handleGoogleSignIn = async () => {
-    setError("");
     setIsGoogleLoading(true);
     
     try {
@@ -165,7 +317,7 @@ export function AuthForm({
           uid: uid,
           name: displayName || "Google User",
           email: email,
-          password: "", // No password for Google auth
+          emailVerified: true, // Google accounts are considered verified
         });
 
         if (!result || !result.success) {
@@ -183,7 +335,7 @@ export function AuthForm({
             return;
           }
           
-          setError(errorMessage);
+          toast.error(errorMessage);
           return;
         }
         
@@ -202,15 +354,51 @@ export function AuthForm({
       console.error("Google sign in error:", error);
       
       if (error.code === 'auth/popup-closed-by-user') {
-        setError("Sign in cancelled. Please try again.");
+        toast.error("Sign in cancelled. Please try again.");
       } else if (error.code === 'auth/account-exists-with-different-credential') {
-        setError("An account already exists with the same email address but different sign-in credentials. Try signing in using the method you used to create the account.");
+        toast.error("An account already exists with the same email address but different sign-in credentials. Try signing in using the method you used to create the account.");
       } else {
-        setError(`Google sign in failed: ${error.message}`);
+        toast.error(`Google sign in failed: ${error.message}`);
       }
     } finally {
       setIsGoogleLoading(false);
     }
+  };
+  
+  // Render verification alert if verification process is in progress
+  const renderVerificationAlert = () => {
+    if (!verificationEmail) return null;
+    
+    return (
+      <Alert variant={verificationSent ? "default" : "destructive"} className="mb-4">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>
+          {verificationSent 
+            ? "Verification email sent!" 
+            : "Email verification required"}
+        </AlertTitle>
+        <AlertDescription className="mt-2">
+          {verificationSent 
+            ? `We've sent a verification link to ${verificationEmail}. Please check your inbox and spam folder.` 
+            : `Your email (${verificationEmail}) needs to be verified before you can sign in.`}
+          
+          <div className="flex space-x-2 mt-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleResendVerification}
+              disabled={resendTimer > 0}
+            >
+              {resendTimer > 0 
+                ? `Resend in ${resendTimer}s` 
+                : verificationSent 
+                  ? "Resend verification email" 
+                  : "Send verification email"}
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
   };
   
   return (
@@ -227,7 +415,10 @@ export function AuthForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit}>
+          {/* Verification Alert */}
+          {renderVerificationAlert()}
+          
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-4">
               {!isSignIn && (
                 <div className="grid gap-2">
@@ -236,10 +427,12 @@ export function AuthForm({
                     id="name"
                     type="text"
                     placeholder="John Doe"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    {...register("name")}
+                    aria-invalid={errors.name ? "true" : "false"}
                   />
+                  {errors.name && (
+                    <p className="text-sm text-red-500">{(errors as FieldErrors<SignUpFormValues>).name?.message}</p>
+                  )}
                 </div>
               )}
               
@@ -249,10 +442,12 @@ export function AuthForm({
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  {...register("email")}
+                  aria-invalid={errors.email ? "true" : "false"}
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
               
               <div className="grid gap-2">
@@ -269,23 +464,21 @@ export function AuthForm({
                 </div>
                 <Input 
                   id="password" 
-                  type="password" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  type="password"
+                  {...register("password")}
+                  aria-invalid={errors.password ? "true" : "false"}
                 />
+                {errors.password && (
+                  <p className="text-sm text-red-500">{errors.password.message}</p>
+                )}
               </div>
-              
-              {error && (
-                <div className="text-sm text-red-500 mt-1">{error}</div>
-              )}
               
               <Button 
                 type="submit" 
                 className="w-full mt-2" 
-                disabled={isLoading || isGoogleLoading}
+                disabled={isSubmitting || isGoogleLoading}
               >
-                {isLoading 
+                {isSubmitting 
                   ? "Processing..." 
                   : isSignIn ? "Login" : "Sign Up"
                 }
@@ -307,7 +500,7 @@ export function AuthForm({
                 className="w-full" 
                 type="button"
                 onClick={handleGoogleSignIn}
-                disabled={isLoading || isGoogleLoading}
+                disabled={isSubmitting || isGoogleLoading}
               >
                 {isGoogleLoading ? (
                   "Connecting to Google..."
