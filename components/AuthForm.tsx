@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,6 +11,17 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { auth } from "@/firebase/client";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import { signIn, signUp } from "@/lib/actions/auth.action";
 
 interface AuthFormProps extends React.ComponentPropsWithoutRef<"div"> {
   type: "signin" | "signup";
@@ -20,6 +33,138 @@ export function AuthForm({
   ...props
 }: AuthFormProps) {
   const isSignIn = type === "signin";
+  const router = useRouter();
+  
+  // Form state
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      if (type === "signup") {
+        // Create user with Firebase
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        // Call backend API to create user in database
+        const result = await signUp({
+          uid: userCredential.user.uid,
+          name: name!,
+          email,
+          password,
+        });
+
+        if (!result?.success) {
+          toast.error(result?.message);
+          // setError(result.message);
+          return;
+        }
+
+        toast.success("Account created successfully. Please sign in.");
+        router.push("/sign-in");
+      } else {
+        // Sign in with Firebase
+        const userCredential = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+        // Get ID token for backend authentication
+        const idToken = await userCredential.user.getIdToken();
+        if (!idToken) {
+          toast.error("Sign in Failed. Please try again.");
+          return;
+        }
+
+        // Call backend API to sign in
+        await signIn({
+          email,
+          idToken,
+        });
+
+        toast.success("Signed in successfully.");
+        router.push("/");
+      }
+    } catch (error: any) {
+      console.error(error);
+      
+      // Handle Firebase auth errors
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            setError('This email is already registered.');
+            break;
+          case 'auth/invalid-email':
+            setError('Invalid email address.');
+            break;
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+            setError('Invalid email or password.');
+            break;
+          case 'auth/weak-password':
+            setError('Password is too weak.');
+            break;
+          default:
+            setError(`Authentication failed: ${error.message}`);
+        }
+      } else {
+        setError("Authentication failed. Please check your credentials.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      
+      // Get ID token for backend authentication
+      const idToken = await userCredential.user.getIdToken();
+      
+      if (type === "signup") {
+        // Register the Google user in your backend
+        const result = await signUp({
+          uid: userCredential.user.uid,
+          name: userCredential.user.displayName || "Google User",
+          email: userCredential.user.email!,
+          password: "",  // No password for Google auth
+        });
+
+        if (!result?.success) {
+          toast.error(result?.message);
+          return;
+        }
+      }
+      
+      // Sign in the user
+      await signIn({
+        email: userCredential.user.email!,
+        idToken,
+      });
+      
+      toast.success("Signed in successfully with Google.");
+      router.push("/");
+    } catch (error: any) {
+      console.error(error);
+      setError(`Google sign in failed: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   return (
     <div className={cn("flex justify-center items-center w-full", className)} {...props}>
@@ -35,7 +180,7 @@ export function AuthForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={onSubmit}>
             <div className="flex flex-col gap-4">
               {!isSignIn && (
                 <div className="grid gap-2">
@@ -45,6 +190,8 @@ export function AuthForm({
                     type="text"
                     placeholder="John Doe"
                     required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
               )}
@@ -56,6 +203,8 @@ export function AuthForm({
                   type="email"
                   placeholder="m@example.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               
@@ -71,11 +220,28 @@ export function AuthForm({
                     </a>
                   )}
                 </div>
-                <Input id="password" type="password" required />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
               
-              <Button type="submit" className="w-full mt-2">
-                {isSignIn ? "Login" : "Sign Up"}
+              {error && (
+                <div className="text-sm text-red-500 mt-1">{error}</div>
+              )}
+              
+              <Button 
+                type="submit" 
+                className="w-full mt-2" 
+                disabled={isLoading}
+              >
+                {isLoading 
+                  ? "Processing..." 
+                  : isSignIn ? "Login" : "Sign Up"
+                }
               </Button>
               
               <div className="relative my-2">
@@ -89,7 +255,13 @@ export function AuthForm({
                 </div>
               </div>
               
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+              >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
