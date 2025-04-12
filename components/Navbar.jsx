@@ -1,4 +1,6 @@
-import React from 'react'
+'use client';
+
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import {
@@ -19,11 +21,56 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LogOut, User, Settings } from "lucide-react"
+import { LogOut, User, Settings, CreditCard } from "lucide-react"
+import { auth } from "@/firebase/client";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { useRouter } from 'next/navigation';
+import { toast } from "sonner";
 
 const Navbar = () => {
-  // Mock user state - replace this with actual auth logic
-  const isLoggedIn = false;
+  // State to track user authentication status
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  
+  // Listen for auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      // Only set the user if they have verified their email or are using OAuth (Google)
+      if (currentUser) {
+        // If email/password auth requires verification, but Google auth users are considered verified
+        const isEmailProvider = currentUser.providerData[0]?.providerId === 'password';
+        if (isEmailProvider && !currentUser.emailVerified) {
+          setUser(null); // Don't set the user if email isn't verified
+        } else {
+          setUser(currentUser);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+    
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+  
+  // Handle user logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      
+      // Call the server action to clear the session cookie
+      await fetch('/api/auth/signout', { method: 'POST' });
+      
+      // Show success message and redirect
+      toast.success('Logged out successfully');
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Failed to log out. Please try again.');
+    }
+  };
   
   return (
     <div className="border-b">
@@ -79,15 +126,19 @@ const Navbar = () => {
           
           {/* Right side - Auth buttons or Avatar */}
           <div className="flex items-center gap-4">
-            {isLoggedIn ? (
+            {!loading && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="h-8 w-8 cursor-pointer">
-                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                    <AvatarFallback>SC</AvatarFallback>
+                  <Avatar className="h-9 w-9 cursor-pointer">
+                    <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email} />
+                    <AvatarFallback>
+                      {user.displayName 
+                        ? `${user.displayName.split(' ')[0][0]}${user.displayName.split(' ')[1]?.[0] || ''}`
+                        : user.email?.[0]?.toUpperCase() || 'U'}
+                    </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
@@ -98,8 +149,15 @@ const Navbar = () => {
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem>
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Billing</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    className="text-red-600 focus:text-red-600 focus:bg-red-100"
+                    onClick={handleLogout}
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>
