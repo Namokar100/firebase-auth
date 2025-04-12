@@ -56,7 +56,27 @@ export async function sendVerificationEmailSMTP(email: string, token: string, us
   const subject = 'Verify Your Email Address';
   
   // Create verification URL with our custom token
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  let baseUrl;
+  
+  // Priority order for base URL determination:
+  // 1. NEXT_PUBLIC_APP_URL - manually set in env vars (most reliable)
+  // 2. VERCEL_URL - automatically set by Vercel in production/preview
+  // 3. Default to localhost for development
+  
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    // Use the manually configured URL (most reliable option)
+    baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+  } else if (process.env.VERCEL_URL) {
+    // Use the Vercel-provided URL with https protocol
+    baseUrl = `https://${process.env.VERCEL_URL}`;
+  } else if (process.env.NODE_ENV === 'production') {
+    // Fallback for production if nothing else is available
+    baseUrl = 'https://firebase-auth-git-feat-firebase-namokar100s-projects.vercel.app';
+  } else {
+    // Default for local development
+    baseUrl = 'http://localhost:3000';
+  }
+  
   const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
   
   const html = `

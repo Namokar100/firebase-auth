@@ -1,0 +1,10 @@
+{
+  "env": {
+    "NEXT_PUBLIC_APP_URL": "https://firebase-auth-git-feat-firebase-namokar100s-projects.vercel.app"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_APP_URL": "https://firebase-auth-git-feat-firebase-namokar100s-projects.vercel.app"
+    }
+  }
+} 
