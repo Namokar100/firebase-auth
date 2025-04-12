@@ -71,7 +71,7 @@ export async function sendVerificationEmailSMTP(email: string, token: string, us
     baseUrl = `https://${process.env.VERCEL_URL}`;
   } else if (process.env.NODE_ENV === 'production') {
     // Fallback for production if nothing else is available
-    baseUrl = 'https://firebase-auth-git-feat-firebase-namokar100s-projects.vercel.app';
+    baseUrl = 'firebase-auth-git-main-namokar100s-projects.vercel.app';
   } else {
     // Default for local development
     baseUrl = 'http://localhost:3000';
