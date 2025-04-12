@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, User, Settings, CreditCard } from "lucide-react";
 import { auth } from "@/firebase/client";
 import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -42,22 +42,37 @@ const Navbar = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const pathname = usePathname();
   
   // Listen for auth state changes
   useEffect(() => {
+    // Reset loading state if we're on the sign-in or sign-out page
+    if (pathname === '/sign-in' || pathname === '/signout') {
+      setLoading(false);
+      setUser(null);
+    }
+    
     // Get initial auth state from session cookie to prevent flickering
     const checkSession = async () => {
       try {
         // Try to get auth state from localStorage first for immediate UI consistency
         const cachedUserStr = localStorage.getItem('authUser');
         if (cachedUserStr) {
-          const cachedUser = JSON.parse(cachedUserStr) as CachedUser;
-          // We can't fully reconstruct a Firebase User object, but we can use it for display
-          // The real Firebase User object will be set when onAuthStateChanged fires
-          setUser(cachedUser as unknown as FirebaseUser);
+          try {
+            const cachedUser = JSON.parse(cachedUserStr) as CachedUser;
+            // We can't fully reconstruct a Firebase User object, but we can use it for display
+            setUser(cachedUser as unknown as FirebaseUser);
+          } catch (parseError) {
+            console.error('Error parsing cached user:', parseError);
+            localStorage.removeItem('authUser');
+          }
+        } else {
+          // If no cached user data, immediately show login/signup
+          setLoading(false);
         }
       } catch (error) {
         console.error('Error checking cached auth state:', error);
+        setLoading(false);
       }
     };
 
@@ -95,7 +110,7 @@ const Navbar = () => {
     
     // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, []);
+  }, [pathname]);
   
   // Handle user logout
   const handleLogout = async () => {
@@ -164,7 +179,7 @@ const Navbar = () => {
           
           {/* Right side - Auth buttons or Avatar */}
           <div className="flex items-center gap-4">
-            {loading ? (
+            {loading && pathname !== '/sign-in' && pathname !== '/sign-up' && pathname !== '/signout' ? (
               <Skeleton className="h-9 w-20 rounded-full" /> // Show skeleton while loading
             ) : user ? (
               <DropdownMenu>

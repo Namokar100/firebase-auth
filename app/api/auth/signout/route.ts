@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
  */
 export async function POST(request: NextRequest) {
   try {
-    // Clear the session cookie - just get the cookies store and delete
+    // Clear the session cookie using the new async cookies API
     const cookieStore = await cookies();
     cookieStore.delete('session');
     
@@ -21,8 +21,9 @@ export async function POST(request: NextRequest) {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0, private',
         'Pragma': 'no-cache',
         'Expires': '0',
+        'SameSite': 'Strict',
         'Surrogate-Control': 'no-store',
-        'Clear-Site-Data': '"cookies", "storage"'
+        'Clear-Site-Data': '"cookies", "storage", "cache"'
       }
     });
   } catch (error: any) {
@@ -38,7 +39,8 @@ export async function POST(request: NextRequest) {
         'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0, private',
         'Pragma': 'no-cache',
         'Expires': '0',
-        'Clear-Site-Data': '"cookies", "storage"'
+        'SameSite': 'Strict',
+        'Clear-Site-Data': '"cookies", "storage", "cache"'
       }
     });
   }

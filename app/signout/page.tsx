@@ -10,6 +10,19 @@ export default function SignOutPage() {
   const router = useRouter();
   const [isNetworkError, setIsNetworkError] = useState(false);
 
+  // Immediately clear all local state on component mount to fix UI
+  useEffect(() => {
+    // Immediately clear localStorage data to fix navbar
+    localStorage.removeItem('authUser');
+    localStorage.removeItem('userData');
+    sessionStorage.clear();
+    
+    // Clear cookies directly
+    document.cookie.split(';').forEach(cookie => {
+      document.cookie = cookie.replace(/^ +/, '').replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+    });
+  }, []);
+
   useEffect(() => {
     let redirectTimer: NodeJS.Timeout;
     let networkCheckTimer: NodeJS.Timeout;
@@ -29,8 +42,7 @@ export default function SignOutPage() {
             setIsNetworkError(true);
           }, 2000);
           
-          // Still try to clear local state and redirect
-          cleanupLocalState();
+          // Force redirect even if offline
           redirectTimer = setTimeout(() => {
             window.location.href = '/sign-in';
           }, 3000);
@@ -51,9 +63,6 @@ export default function SignOutPage() {
           console.error('Firebase signout error:', firebaseError);
           // Continue with the rest of the cleanup even if Firebase fails
         }
-        
-        // Clean up all local state regardless of Firebase signout success
-        cleanupLocalState();
         
         // Clear server-side session with timeout to prevent hanging
         try {
@@ -98,8 +107,9 @@ export default function SignOutPage() {
           });
         }
         
-        // Force redirect using window.location after a short delay
+        // Force reload before redirect to ensure clean state
         redirectTimer = setTimeout(() => {
+          // Use hard navigation to sign-in to ensure a complete page refresh
           window.location.href = '/sign-in';
         }, 2000);
       } catch (error) {
@@ -116,27 +126,11 @@ export default function SignOutPage() {
           toast.error('An error occurred during sign out');
         }
         
-        // Clean up local state regardless of errors
-        cleanupLocalState();
-        
-        // Even on error, redirect to sign-in page
+        // Even on error, redirect to sign-in page with hard navigation
         redirectTimer = setTimeout(() => {
           window.location.href = '/sign-in';
         }, 2000);
       }
-    }
-    
-    // Separate function to clean up local state to avoid code duplication
-    function cleanupLocalState() {
-      // Clear any cached data
-      localStorage.removeItem('authUser');
-      localStorage.removeItem('userData');
-      sessionStorage.clear();
-      
-      // Try to clear cookies directly using document.cookie
-      document.cookie.split(';').forEach(cookie => {
-        document.cookie = cookie.replace(/^ +/, '').replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
-      });
     }
 
     // Add event listeners for network status changes
