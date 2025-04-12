@@ -14,6 +14,11 @@ export function middleware(request: NextRequest) {
   // Define auth routes (require NO authentication)
   const authRoutes = ['/sign-in', '/sign-up', '/forgot-password'];
   
+  // Special case for the signout page (always accessible, but redirects after processing)
+  if (pathname === '/signout') {
+    return NextResponse.next();
+  }
+  
   // Check if the path is a protected route
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route) || pathname === route

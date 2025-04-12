@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { signOut } from "@/lib/actions/auth.action";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { auth } from "@/firebase/client";
 
 export function SignOutButton({ 
   className, 
@@ -22,22 +19,10 @@ export function SignOutButton({
   const handleSignOut = async () => {
     setIsLoading(true);
     try {
-      // Sign out from Firebase client
-      await auth.signOut();
-      
-      // Clear server-side session
-      const result = await signOut();
-      
-      if (result.success) {
-        toast.success("Signed out successfully");
-        router.push("/sign-in");
-      } else {
-        toast.error("Failed to sign out");
-      }
+      // Navigate to the dedicated signout page
+      router.push("/signout");
     } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error("An error occurred while signing out");
-    } finally {
+      console.error("Error navigating to signout page:", error);
       setIsLoading(false);
     }
   };

@@ -101,21 +101,11 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       setLoading(true); // Show loading state during logout
-      await signOut(auth);
-      
-      // Clear cached user data
-      localStorage.removeItem('authUser');
-      
-      // Call the server action to clear the session cookie
-      await fetch('/api/auth/signout', { method: 'POST' });
-      
-      // Show success message and redirect
-      toast.success('Logged out successfully');
-      router.push('/sign-in');
+      // Navigate to dedicated signout page instead of handling logout here
+      router.push('/signout');
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Failed to log out. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
