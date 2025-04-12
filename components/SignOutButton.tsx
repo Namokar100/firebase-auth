@@ -21,9 +21,20 @@ export function SignOutButton({
     try {
       // Navigate to the dedicated signout page
       router.push("/signout");
+      
+      // Add a fallback redirect to handle cases where the navigation gets stuck
+      setTimeout(() => {
+        // If we're still on the page after 3 seconds, force redirect to sign-in
+        if (isLoading) {
+          window.location.href = "/sign-in";
+        }
+      }, 3000);
     } catch (error) {
       console.error("Error navigating to signout page:", error);
       setIsLoading(false);
+      
+      // Fallback: If navigation fails, try direct location change
+      window.location.href = "/sign-in";
     }
   };
 

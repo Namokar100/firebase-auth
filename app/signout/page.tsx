@@ -10,49 +10,69 @@ export default function SignOutPage() {
   const router = useRouter();
 
   useEffect(() => {
+    let redirectTimer: NodeJS.Timeout;
+
     async function performSignOut() {
       try {
         // Clear Firebase auth state
         await firebaseSignOut(auth);
         
-        // Clear cached user data
+        // Clear any cached data
         localStorage.removeItem('authUser');
+        localStorage.removeItem('userData');
+        sessionStorage.clear();
+        
+        // Try to clear cookies directly using document.cookie
+        // This is a fallback approach for client-side
+        document.cookie.split(';').forEach(cookie => {
+          document.cookie = cookie.replace(/^ +/, '').replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+        });
         
         // Clear server-side session
-        const response = await fetch('/api/auth/signout', { 
-          method: 'POST',
-          headers: {
-            'Cache-Control': 'no-cache, no-store',
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to sign out on server');
+        try {
+          const response = await fetch('/api/auth/signout', { 
+            method: 'POST',
+            headers: {
+              'Cache-Control': 'no-cache, no-store',
+            },
+            cache: 'no-store',
+          });
+          
+          if (!response.ok) {
+            console.error('Failed to sign out on server');
+          }
+        } catch (apiError) {
+          console.error('API error during sign out:', apiError);
         }
         
-        // Show success message with hardcoded text
+        // Show success message
         toast.success('Signed out successfully', {
           id: 'sign-out-success',
-          duration: 3000
+          duration: 2000
         });
         
-        // Add a short delay before redirect to ensure the toast is shown
-        setTimeout(() => {
-          // Redirect to sign-in page
-          router.push('/sign-in');
+        // Force redirect using window.location after a short delay
+        // This is more reliable in production than Next.js router
+        redirectTimer = setTimeout(() => {
+          window.location.href = '/sign-in';
         }, 500);
       } catch (error) {
         console.error('Error during signout:', error);
         toast.error('An error occurred during sign out');
         
-        // Attempt to redirect to sign-in even if there was an error
-        setTimeout(() => {
-          router.push('/sign-in');
+        // Even on error, redirect to sign-in page
+        redirectTimer = setTimeout(() => {
+          window.location.href = '/sign-in';
         }, 500);
       }
     }
 
     performSignOut();
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
   }, [router]);
 
   return (
