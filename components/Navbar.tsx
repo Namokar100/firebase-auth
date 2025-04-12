@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Button } from "@/components/ui/button"
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,7 +11,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,22 +19,52 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LogOut, User, Settings, CreditCard } from "lucide-react"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LogOut, User, Settings, CreditCard } from "lucide-react";
 import { auth } from "@/firebase/client";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Define interface for cached user data
+interface CachedUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  emailVerified: boolean;
+}
 
 const Navbar = () => {
   // State to track user authentication status
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   
   // Listen for auth state changes
   useEffect(() => {
+    // Get initial auth state from session cookie to prevent flickering
+    const checkSession = async () => {
+      try {
+        // Try to get auth state from localStorage first for immediate UI consistency
+        const cachedUserStr = localStorage.getItem('authUser');
+        if (cachedUserStr) {
+          const cachedUser = JSON.parse(cachedUserStr) as CachedUser;
+          // We can't fully reconstruct a Firebase User object, but we can use it for display
+          // The real Firebase User object will be set when onAuthStateChanged fires
+          setUser(cachedUser as unknown as FirebaseUser);
+        }
+      } catch (error) {
+        console.error('Error checking cached auth state:', error);
+      }
+    };
+
+    // Run this immediately
+    checkSession();
+    
+    // Then setup the Firebase auth listener
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       // Only set the user if they have verified their email or are using OAuth (Google)
       if (currentUser) {
@@ -42,11 +72,23 @@ const Navbar = () => {
         const isEmailProvider = currentUser.providerData[0]?.providerId === 'password';
         if (isEmailProvider && !currentUser.emailVerified) {
           setUser(null); // Don't set the user if email isn't verified
+          localStorage.removeItem('authUser');
         } else {
+          // Store minimal user data for caching
+          const userData: CachedUser = {
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            photoURL: currentUser.photoURL,
+            emailVerified: currentUser.emailVerified
+          };
           setUser(currentUser);
+          // Cache the user data in localStorage
+          localStorage.setItem('authUser', JSON.stringify(userData));
         }
       } else {
         setUser(null);
+        localStorage.removeItem('authUser');
       }
       setLoading(false);
     });
@@ -58,7 +100,11 @@ const Navbar = () => {
   // Handle user logout
   const handleLogout = async () => {
     try {
+      setLoading(true); // Show loading state during logout
       await signOut(auth);
+      
+      // Clear cached user data
+      localStorage.removeItem('authUser');
       
       // Call the server action to clear the session cookie
       await fetch('/api/auth/signout', { method: 'POST' });
@@ -69,6 +115,8 @@ const Navbar = () => {
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Failed to log out. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -126,11 +174,13 @@ const Navbar = () => {
           
           {/* Right side - Auth buttons or Avatar */}
           <div className="flex items-center gap-4">
-            {!loading && user ? (
+            {loading ? (
+              <Skeleton className="h-9 w-20 rounded-full" /> // Show skeleton while loading
+            ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="h-9 w-9 cursor-pointer">
-                    <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email} />
+                    <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email || ""} />
                     <AvatarFallback>
                       {user.displayName 
                         ? `${user.displayName.split(' ')[0][0]}${user.displayName.split(' ')[1]?.[0] || ''}`
@@ -177,7 +227,7 @@ const Navbar = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar; 
