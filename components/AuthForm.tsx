@@ -293,16 +293,42 @@ export function AuthForm({
             switch (error.code) {
               case 'auth/user-not-found':
               case 'auth/wrong-password':
-                toast.error('Invalid email or password.');
+              case 'auth/invalid-credential':
+              case 'auth/invalid-login-credentials':
+                toast.error('Invalid credentials. Please enter valid email and password.', {
+                  id: 'auth-invalid-credentials',
+                  duration: 5000
+                });
                 break;
               case 'auth/too-many-requests':
-                toast.error('Too many failed login attempts. Please try again later.');
+                toast.error('For security reasons, access has been temporarily disabled. Please try again later or reset your password.', {
+                  id: 'auth-too-many-attempts',
+                  duration: 5000
+                });
+                break;
+              case 'auth/user-disabled':
+                toast.error('This account has been disabled. Please contact support for assistance.', {
+                  id: 'auth-user-disabled',
+                  duration: 5000
+                });
+                break;
+              case 'auth/network-request-failed':
+                toast.error('Network connection issue. Please check your internet connection and try again.', {
+                  id: 'auth-network-error',
+                  duration: 5000
+                });
                 break;
               default:
-                toast.error(`Authentication failed: ${error.message}`);
+                toast.error('Authentication failed. Please try again or contact support if the issue persists.', {
+                  id: 'auth-general-error',
+                  duration: 5000
+                });
             }
           } else {
-            toast.error("Authentication failed. Please check your credentials.");
+            toast.error("Authentication failed. Please check your email and password and try again.", {
+              id: 'auth-unknown-error',
+              duration: 5000
+            });
           }
         }
       }
@@ -313,26 +339,47 @@ export function AuthForm({
       if (error.code) {
         switch (error.code) {
           case 'auth/email-already-in-use':
-            toast.error('This email is already registered. Please sign in.');
+            toast.error('This email address is already registered. Please sign in instead.', {
+              id: 'signup-email-in-use',
+              duration: 5000
+            });
             break;
           case 'auth/invalid-email':
-            toast.error('Invalid email address.');
+            toast.error('Please enter a valid email address.', {
+              id: 'signup-invalid-email',
+              duration: 5000
+            });
             break;
           case 'auth/weak-password':
-            toast.error('Password is too weak.');
+            toast.error('Your password is too weak. Please use a stronger password with at least 6 characters.', {
+              id: 'signup-weak-password',
+              duration: 5000
+            });
             break;
           case 'auth/too-many-requests':
-            toast.error('Too many requests. Please try again later.');
+            toast.error('For security reasons, new accounts creation is temporarily limited. Please try again later.', {
+              id: 'signup-too-many-requests',
+              duration: 5000
+            });
             break;
           default:
             if (error.message?.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
-              toast.error('Too many attempts. Please try again later.');
+              toast.error('Too many attempts. Please wait a few minutes before trying again.', {
+                id: 'signup-rate-limited',
+                duration: 5000
+              });
             } else {
-              toast.error(`Authentication failed: ${error.message}`);
+              toast.error('Account creation failed. Please try again or contact support if the issue persists.', {
+                id: 'signup-general-error',
+                duration: 5000
+              });
             }
         }
       } else {
-        toast.error("Authentication failed. Please check your credentials.");
+        toast.error("Account creation failed. Please check your information and try again.", {
+          id: 'signup-unknown-error',
+          duration: 5000
+        });
       }
     }
   };
@@ -403,11 +450,28 @@ export function AuthForm({
       console.error("Google sign in error:", error);
       
       if (error.code === 'auth/popup-closed-by-user') {
-        toast.error("Sign in cancelled. Please try again.");
+        toast.error("Google sign-in was cancelled. Please try again when you're ready.", {
+          id: 'google-signin-cancelled',
+          duration: 5000
+        });
       } else if (error.code === 'auth/account-exists-with-different-credential') {
-        toast.error("An account already exists with the same email address but different sign-in credentials. Try signing in using the method you used to create the account.");
+        toast.error("An account already exists with this email address but using a different sign-in method. Please use the method you originally used to create the account.", {
+          id: 'google-signin-credential-conflict',
+          duration: 5000
+        });
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // No need to show error for cancelled popups
+        return;
+      } else if (error.code === 'auth/network-request-failed') {
+        toast.error("Network connection issue. Please check your internet connection and try again.", {
+          id: 'google-signin-network-error',
+          duration: 5000
+        });
       } else {
-        toast.error(`Google sign in failed: ${error.message}`);
+        toast.error("Google sign-in failed. Please try again or use email/password sign-in instead.", {
+          id: 'google-signin-general-error',
+          duration: 5000
+        });
       }
     } finally {
       setIsGoogleLoading(false);
@@ -477,10 +541,12 @@ export function AuthForm({
                     type="text"
                     placeholder="John Doe"
                     {...register("name")}
-                    aria-invalid={errors.name ? "true" : "false"}
+                    aria-invalid={!isSignIn && 'name' in errors ? "true" : "false"}
                   />
-                  {errors.name && (
-                    <p className="text-sm text-red-500">{(errors as FieldErrors<SignUpFormValues>).name?.message}</p>
+                  {!isSignIn && 'name' in errors && (
+                    <p className="text-sm text-red-500">
+                      {(errors as any).name?.message}
+                    </p>
                   )}
                 </div>
               )}
