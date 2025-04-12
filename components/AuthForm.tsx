@@ -20,6 +20,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signOut,
 } from "firebase/auth";
 import { signIn, signUp, sendVerificationEmail } from "@/lib/actions/auth.action";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -188,6 +189,9 @@ export function AuthForm({
           signUpData.password
         );
         
+        // Sign out immediately so user can't appear as logged in before verification
+        await signOut(auth);
+        
         // Call backend API to create user in database and send verification email
         const result = await signUp({
           uid: userCredential.user.uid,
@@ -232,18 +236,23 @@ export function AuthForm({
             signInData.password
           );
 
+          // Check if email is verified - sign out immediately if not
+          if (!userCredential.user.emailVerified) {
+            // Sign out the user since they shouldn't be logged in without verification
+            await signOut(auth);
+            
+            toast.error("Please verify your email before signing in.");
+            setVerificationEmail(signInData.email);
+            setVerificationSent(false);
+            return;
+          }
+
+          // If email is verified, continue with the sign-in process
           // Get ID token for backend authentication
           const idToken = await userCredential.user.getIdToken();
           if (!idToken) {
             toast.error("Sign in Failed. Please try again.");
-            return;
-          }
-
-          // Check if email is verified
-          if (!userCredential.user.emailVerified) {
-            toast.error("Please verify your email before signing in.");
-            setVerificationEmail(signInData.email);
-            setVerificationSent(false);
+            await signOut(auth); // Sign out in case of error
             return;
           }
 
@@ -256,6 +265,9 @@ export function AuthForm({
           if (!result.success) {
             // Check if verification is needed
             if (result.needsVerification) {
+              // Sign out the user since they shouldn't be logged in
+              await signOut(auth);
+              
               toast.error(result.message);
               setVerificationEmail(result.email);
               setVerificationSent(false);
@@ -263,12 +275,20 @@ export function AuthForm({
             }
             
             toast.error(result.message);
+            await signOut(auth); // Sign out in case of error
             return;
           }
 
           toast.success("Signed in successfully.");
           router.push("/home");
         } catch (error: any) {
+          // Make sure user is signed out if there was an error
+          try {
+            await signOut(auth);
+          } catch (signOutError) {
+            console.error("Error signing out after failed login:", signOutError);
+          }
+          
           // Special handling for unverified users
           if (error.code === 'auth/invalid-login-credentials') {
             // Check if user exists but email not verified
@@ -333,7 +353,12 @@ export function AuthForm({
         }
       }
     } catch (error: any) {
-      console.error(error);
+      // Make sure user is signed out if there was an error
+      try {
+        await signOut(auth);
+      } catch (signOutError) {
+        console.error("Error signing out after error:", signOutError);
+      }
       
       // Handle Firebase auth errors
       if (error.code) {
@@ -421,16 +446,25 @@ export function AuthForm({
           
           // If user already exists, try to sign them in directly
           if (errorMessage.includes("already exists")) {
-            await signIn({
+            const signInResult = await signIn({
               email,
               idToken,
             });
             
-            toast.success("Signed in with Google successfully.");
-            router.push("/home");
-            return;
+            if (signInResult.success) {
+              toast.success("Signed in with Google successfully.");
+              router.push("/home");
+              return;
+            } else {
+              // Sign out if there's an error
+              await signOut(auth);
+              toast.error(signInResult.message || "Google sign in failed. Please try again.");
+              return;
+            }
           }
           
+          // Sign out if there's an error
+          await signOut(auth);
           toast.error(errorMessage);
           return;
         }
@@ -439,39 +473,35 @@ export function AuthForm({
       }
       
       // Sign in the user (for both sign-up and sign-in flows)
-      await signIn({
+      const signInResult = await signIn({
         email,
         idToken,
       });
       
+      if (!signInResult.success) {
+        // Sign out if there's an error
+        await signOut(auth);
+        toast.error(signInResult.message || "Google sign in failed. Please try again.");
+        return;
+      }
+      
       toast.success("Signed in with Google successfully.");
       router.push("/home");
     } catch (error: any) {
-      console.error("Google sign in error:", error);
+      // Make sure to sign out if there was an error with Google sign-in
+      try {
+        await signOut(auth);
+      } catch (signOutError) {
+        console.error("Error signing out after Google sign-in error:", signOutError);
+      }
       
       if (error.code === 'auth/popup-closed-by-user') {
-        toast.error("Google sign-in was cancelled. Please try again when you're ready.", {
-          id: 'google-signin-cancelled',
-          duration: 5000
-        });
+        toast.error('Google sign in was cancelled');
       } else if (error.code === 'auth/account-exists-with-different-credential') {
-        toast.error("An account already exists with this email address but using a different sign-in method. Please use the method you originally used to create the account.", {
-          id: 'google-signin-credential-conflict',
-          duration: 5000
-        });
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        // No need to show error for cancelled popups
-        return;
-      } else if (error.code === 'auth/network-request-failed') {
-        toast.error("Network connection issue. Please check your internet connection and try again.", {
-          id: 'google-signin-network-error',
-          duration: 5000
-        });
+        toast.error('An account already exists with the same email address but different sign-in credentials. Try signing in using the method you used previously.');
       } else {
-        toast.error("Google sign-in failed. Please try again or use email/password sign-in instead.", {
-          id: 'google-signin-general-error',
-          duration: 5000
-        });
+        console.error("Google sign in error:", error);
+        toast.error("Failed to sign in with Google. Please try again.");
       }
     } finally {
       setIsGoogleLoading(false);

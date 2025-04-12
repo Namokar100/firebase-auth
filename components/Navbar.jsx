@@ -36,7 +36,18 @@ const Navbar = () => {
   // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+      // Only set the user if they have verified their email or are using OAuth (Google)
+      if (currentUser) {
+        // If email/password auth requires verification, but Google auth users are considered verified
+        const isEmailProvider = currentUser.providerData[0]?.providerId === 'password';
+        if (isEmailProvider && !currentUser.emailVerified) {
+          setUser(null); // Don't set the user if email isn't verified
+        } else {
+          setUser(currentUser);
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
     
