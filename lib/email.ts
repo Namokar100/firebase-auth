@@ -50,6 +50,23 @@ export async function sendEmail(options: EmailOptions) {
 }
 
 /**
+ * Ensures a URL has a protocol (http:// or https://)
+ */
+function ensureProtocol(url: string): string {
+  if (!url) return url;
+  
+  // Check if URL already has a protocol
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // Add https:// for production, http:// for development
+  return process.env.NODE_ENV === 'production' 
+    ? `https://${url}` 
+    : `http://${url}`;
+}
+
+/**
  * Sends a verification email with custom template
  */
 export async function sendVerificationEmailSMTP(email: string, token: string, userName: string = '') {
@@ -65,13 +82,13 @@ export async function sendVerificationEmailSMTP(email: string, token: string, us
   
   if (process.env.NEXT_PUBLIC_APP_URL) {
     // Use the manually configured URL (most reliable option)
-    baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    baseUrl = ensureProtocol(process.env.NEXT_PUBLIC_APP_URL);
   } else if (process.env.VERCEL_URL) {
     // Use the Vercel-provided URL with https protocol
     baseUrl = `https://${process.env.VERCEL_URL}`;
   } else if (process.env.NODE_ENV === 'production') {
     // Fallback for production if nothing else is available
-    baseUrl = 'firebase-auth-git-main-namokar100s-projects.vercel.app';
+    baseUrl = 'https://firebase-auth-git-main-namokar100s-projects.vercel.app';
   } else {
     // Default for local development
     baseUrl = 'http://localhost:3000';
