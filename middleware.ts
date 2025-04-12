@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
+  // Get the session cookie
   const sessionCookie = request.cookies.get('session');
   
   // Path the user is trying to access
@@ -35,7 +36,19 @@ export function middleware(request: NextRequest) {
   }
 
   // If there is a session cookie and user is trying to access an auth route
+  // Only redirect if it's a valid session cookie, not expired or malformed
   if (sessionCookie && isAuthRoute) {
+    // Special case for sign-in page - always allow access after signout
+    if (pathname === '/sign-in') {
+      // If coming from signout page, or has ?signout=true parameter, don't redirect
+      const referer = request.headers.get('referer') || '';
+      const hasSignoutParam = request.nextUrl.searchParams.has('signout');
+      
+      if (referer.includes('/signout') || hasSignoutParam) {
+        return NextResponse.next();
+      }
+    }
+    
     return NextResponse.redirect(new URL('/home', request.url));
   }
 

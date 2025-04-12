@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
  */
 export async function POST(request: NextRequest) {
   try {
-    // Clear the session cookie using the new async cookies API
+    // Clear the session cookie using the syntax exactly as specified
     const cookieStore = await cookies();
     cookieStore.delete('session');
     

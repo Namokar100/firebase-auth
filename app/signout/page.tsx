@@ -44,7 +44,7 @@ export default function SignOutPage() {
           
           // Force redirect even if offline
           redirectTimer = setTimeout(() => {
-            window.location.href = '/sign-in';
+            window.location.href = '/sign-in?signout=true';
           }, 3000);
           return;
         }
@@ -72,6 +72,7 @@ export default function SignOutPage() {
           const response = await fetch('/api/auth/signout', { 
             method: 'POST',
             headers: {
+              'Content-Type': 'application/json',
               'Cache-Control': 'no-cache, no-store',
             },
             cache: 'no-store',
@@ -99,6 +100,9 @@ export default function SignOutPage() {
           }
         }
         
+        // Regardless of API success, force session cookie deletion with direct cookie access
+        document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        
         // Show success message if no network error
         if (navigator.onLine && !isNetworkError) {
           toast.success('Signed out successfully', {
@@ -110,7 +114,7 @@ export default function SignOutPage() {
         // Force reload before redirect to ensure clean state
         redirectTimer = setTimeout(() => {
           // Use hard navigation to sign-in to ensure a complete page refresh
-          window.location.href = '/sign-in';
+          window.location.href = '/sign-in?signout=true';
         }, 2000);
       } catch (error) {
         console.error('Error during signout:', error);
@@ -128,7 +132,7 @@ export default function SignOutPage() {
         
         // Even on error, redirect to sign-in page with hard navigation
         redirectTimer = setTimeout(() => {
-          window.location.href = '/sign-in';
+          window.location.href = '/sign-in?signout=true';
         }, 2000);
       }
     }
