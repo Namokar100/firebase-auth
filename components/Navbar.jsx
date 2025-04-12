@@ -65,7 +65,7 @@ const Navbar = () => {
       
       // Show success message and redirect
       toast.success('Logged out successfully');
-      router.push('/');
+      router.push('/sign-in');
     } catch (error) {
       console.error('Logout error:', error);
       toast.error('Failed to log out. Please try again.');
