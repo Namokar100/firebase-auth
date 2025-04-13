@@ -69,8 +69,14 @@ function ensureProtocol(url: string): string {
 /**
  * Sends a verification email with custom template
  */
-export async function sendVerificationEmailSMTP(email: string, token: string, userName: string = '') {
-  const subject = 'Verify Your Email Address';
+export async function sendVerificationEmailSMTP(
+  email: string, 
+  token: string, 
+  userName: string = '',
+  customSubject?: string,
+  customHtml?: string
+) {
+  const subject = customSubject || 'Verify Your Email Address';
   
   // Create verification URL with our custom token
   let baseUrl;
@@ -96,7 +102,8 @@ export async function sendVerificationEmailSMTP(email: string, token: string, us
   
   const verificationUrl = `${baseUrl}/api/auth/verify-email?token=${token}`;
   
-  const html = `
+  // Use custom HTML if provided, otherwise use default verification email template
+  const html = customHtml || `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
       <h2 style="color: #333; text-align: center;">Email Verification</h2>
       <p>Hello ${userName || email},</p>
