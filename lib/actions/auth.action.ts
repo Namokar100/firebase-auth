@@ -3,7 +3,7 @@
 import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
 import { SignUpFormValues } from "../validations/auth";
-import { sendVerificationEmailSMTP } from "../email";
+import { sendVerificationEmailSMTP, sendPasswordResetEmailSMTP } from "../email";
 import { generateVerificationToken } from "../token";
 
 const ONE_WEEK = 60 * 60 * 24 * 7;
@@ -330,35 +330,11 @@ export async function sendPasswordResetEmail(email: string) {
             used: false
         });
         
-        // Create reset password link
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-        const resetLink = `${baseUrl}/reset-password?token=${token}`;
-        
-        // Custom email subject and content
-        const subject = 'Reset Your Password';
-        const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
-                <h2 style="color: #333; text-align: center;">Password Reset</h2>
-                <p>Hello ${userName || email},</p>
-                <p>We received a request to reset your password. Please click the button below to set a new password:</p>
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="${resetLink}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
-                </div>
-                <p>Or copy and paste this link in your browser:</p>
-                <p style="word-break: break-all; background-color: #f5f5f5; padding: 10px; border-radius: 4px;">${resetLink}</p>
-                <p>If you didn't request a password reset, you can safely ignore this email.</p>
-                <p>This link will expire in 1 hour.</p>
-                <p>Thanks,<br/>Firebase Auth App Team</p>
-            </div>
-        `;
-        
-        // Send the email with custom subject and content
-        const emailResult = await sendVerificationEmailSMTP(
-            email, 
-            token, 
-            userName,
-            subject,
-            html
+        // Send password reset email using the centralized function
+        const emailResult = await sendPasswordResetEmailSMTP(
+            email,
+            token,
+            userName
         );
         
         if (!emailResult.success) {
