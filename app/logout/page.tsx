@@ -36,7 +36,7 @@ export default function LogoutPage() {
   }, [router]);
 
   return (
-    <div className="h-screen w-full flex flex-col items-center justify-center bg-background">
+    <div className="flex flex-col items-center justify-center min-h-[60vh]">
       {/* Spinner */}
       <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mb-4"></div>
       

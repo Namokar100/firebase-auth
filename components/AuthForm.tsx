@@ -29,6 +29,7 @@ import { SignInFormValues, SignUpFormValues, signInSchema, signUpSchema } from "
 import { AlertCircle, Check, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FieldErrors } from "react-hook-form";
+import AuthLoadingPage from "./AuthLoadingPage";
 
 interface AuthFormProps extends React.ComponentPropsWithoutRef<"div"> {
   type: "signin" | "signup";
@@ -48,6 +49,7 @@ export function AuthForm({
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   
   // Ref to track if toast was shown
   const toastShownRef = useRef(false);
@@ -179,6 +181,9 @@ export function AuthForm({
 
   const onSubmit = async (data: SignUpFormValues | SignInFormValues) => {
     try {
+      // Show authentication loading page
+      setIsAuthenticating(true);
+      
       if (type === "signup") {
         const signUpData = data as SignUpFormValues;
         
@@ -200,6 +205,9 @@ export function AuthForm({
           password: signUpData.password,
           emailVerified: false,
         });
+
+        // Hide loading page regardless of result
+        setIsAuthenticating(false);
 
         if (!result || !result.success) {
           const errorMessage = result?.message || "Sign up failed. Please try again.";
@@ -241,6 +249,9 @@ export function AuthForm({
             // Sign out the user since they shouldn't be logged in without verification
             await signOut(auth);
             
+            // Hide loading page
+            setIsAuthenticating(false);
+            
             toast.error("Please verify your email before signing in.");
             setVerificationEmail(signInData.email);
             setVerificationSent(false);
@@ -280,8 +291,12 @@ export function AuthForm({
           }
 
           toast.success("Signed in successfully.");
-          router.push("/home");
+          router.push("/");
+          // Loading page will automatically redirect
         } catch (error: any) {
+          // Hide loading page on error
+          setIsAuthenticating(false);
+          
           // Make sure user is signed out if there was an error
           try {
             await signOut(auth);
@@ -353,6 +368,9 @@ export function AuthForm({
         }
       }
     } catch (error: any) {
+      // Hide loading page on error
+      setIsAuthenticating(false);
+      
       // Make sure user is signed out if there was an error
       try {
         await signOut(auth);
@@ -410,6 +428,8 @@ export function AuthForm({
   };
   
   const handleGoogleSignIn = async () => {
+    // Show authentication loading page
+    setIsAuthenticating(true);
     setIsGoogleLoading(true);
     
     try {
@@ -458,6 +478,7 @@ export function AuthForm({
             } else {
               // Sign out if there's an error
               await signOut(auth);
+              setIsAuthenticating(false);
               toast.error(signInResult.message || "Google sign in failed. Please try again.");
               return;
             }
@@ -465,6 +486,7 @@ export function AuthForm({
           
           // Sign out if there's an error
           await signOut(auth);
+          setIsAuthenticating(false);
           toast.error(errorMessage);
           return;
         }
@@ -481,13 +503,18 @@ export function AuthForm({
       if (!signInResult.success) {
         // Sign out if there's an error
         await signOut(auth);
+        setIsAuthenticating(false);
         toast.error(signInResult.message || "Google sign in failed. Please try again.");
         return;
       }
       
       toast.success("Signed in with Google successfully.");
       router.push("/");
+      // Loading page will automatically redirect
     } catch (error: any) {
+      // Hide loading page
+      setIsAuthenticating(false);
+      
       // Make sure to sign out if there was an error with Google sign-in
       try {
         await signOut(auth);
@@ -543,6 +570,11 @@ export function AuthForm({
       </Alert>
     );
   };
+  
+  // If authentication is in progress, show the loading page
+  if (isAuthenticating) {
+    return <AuthLoadingPage type={type} redirectTo={isSignIn ? "/" : "/"} />;
+  }
   
   return (
     <div className={cn("flex justify-center items-center w-full", className)} {...props}>
