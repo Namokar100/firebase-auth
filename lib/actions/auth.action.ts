@@ -274,15 +274,21 @@ export async function isAuthenticated(): Promise<boolean> {
     return !!user;
 }
 
-export async function signOut() {
+export async function logout() {
     const cookieStore = await cookies();
     
-    // Clear the session cookie
-    cookieStore.delete('session');
-    
+    // Clear the session cookie by setting it to an empty string and expiring it
+    cookieStore.set('session', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        expires: new Date(0), // Set expiration to epoch time (effectively deleting it)
+        path: '/',
+        sameSite: 'lax',
+    });
+
     return {
         success: true,
-        message: 'Signed out successfully'
+        message: 'Logged out successfully'
     };
 }
 

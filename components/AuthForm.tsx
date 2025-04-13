@@ -20,7 +20,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  signOut,
+  signOut, // Used internally for auth flow only, not for user logout
 } from "firebase/auth";
 import { signIn, signUp, sendVerificationEmail } from "@/lib/actions/auth.action";
 import { zodResolver } from "@hookform/resolvers/zod";
