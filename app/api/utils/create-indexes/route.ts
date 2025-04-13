@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Add a development-only secret token check
-    const headersList = headers();
+    const headersList = await headers();
     const authHeader = headersList.get('authorization');
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

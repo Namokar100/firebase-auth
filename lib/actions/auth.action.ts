@@ -3,7 +3,7 @@
 import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
 import { SignUpFormValues } from "../validations/auth";
-import { sendVerificationEmailSMTP } from "../email";
+import { sendVerificationEmailSMTP, sendPasswordResetEmailSMTP } from "../email";
 import { generateVerificationToken } from "../token";
 
 const ONE_WEEK = 60 * 60 * 24 * 7;
@@ -290,6 +290,144 @@ export async function logout() {
         success: true,
         message: 'Logged out successfully'
     };
+}
+
+// For sending password reset emails
+export async function sendPasswordResetEmail(email: string) {
+    try {
+        // Check if user exists
+        let userRecord;
+        try {
+            userRecord = await auth.getUserByEmail(email);
+        } catch (error) {
+            // Don't reveal if email exists or not for security reasons
+            return {
+                success: true,
+                message: 'If your email is registered, you will receive a password reset link.'
+            };
+        }
+        
+        // Get user's name if available
+        let userName = '';
+        try {
+            const userDoc = await db.collection('users').doc(userRecord.uid).get();
+            if (userDoc.exists) {
+                userName = userDoc.data()?.name || '';
+            }
+        } catch (error) {
+            console.log('Error getting user name:', error);
+        }
+
+        // Generate a password reset token (similar to verification token)
+        const token = await generateVerificationToken(email);
+        
+        // Store the token in the database with expiration
+        await db.collection('passwordResetTokens').add({
+            email,
+            token,
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 3600000), // 1 hour expiration
+            used: false
+        });
+        
+        // Send password reset email using the centralized function
+        const emailResult = await sendPasswordResetEmailSMTP(
+            email,
+            token,
+            userName
+        );
+        
+        if (!emailResult.success) {
+            throw new Error(emailResult.error || 'Failed to send password reset email');
+        }
+        
+        return {
+            success: true,
+            message: 'If your email is registered, you will receive a password reset link.'
+        };
+    } catch (error: any) {
+        console.error("Error sending password reset email:", error);
+        return {
+            success: false,
+            message: `Failed to send password reset email: ${error.message}`
+        };
+    }
+}
+
+// Function to reset password with token
+export async function resetPassword(token: string, newPassword: string) {
+    try {
+        // First, query by token only (which can use a simple single-field index)
+        const tokenQuerySnapshot = await db
+            .collection('passwordResetTokens')
+            .where('token', '==', token)
+            .get();
+        
+        if (tokenQuerySnapshot.empty) {
+            return {
+                success: false,
+                message: 'Invalid or expired token. Please request a new password reset link.'
+            };
+        }
+        
+        // Filter the results in-memory to find a non-used token that hasn't expired
+        const now = new Date();
+        const validTokenDocs = tokenQuerySnapshot.docs.filter(doc => {
+            const data = doc.data();
+            
+            // Handle Firestore Timestamp objects safely
+            const expiresAt = data.expiresAt && typeof data.expiresAt.toDate === 'function' 
+                ? data.expiresAt.toDate() 
+                : new Date(data.expiresAt);
+                
+            return !data.used && expiresAt > now;
+        });
+        
+        if (validTokenDocs.length === 0) {
+            return {
+                success: false,
+                message: 'This reset link has expired or already been used. Please request a new one.'
+            };
+        }
+        
+        // Get the first valid token document
+        const tokenDoc = validTokenDocs[0];
+        const tokenData = tokenDoc.data();
+        
+        // Find the user by email
+        const email = tokenData.email;
+        try {
+            const userRecord = await auth.getUserByEmail(email);
+            
+            // Update the user's password
+            await auth.updateUser(userRecord.uid, {
+                password: newPassword
+            });
+            
+            // Mark the token as used
+            await tokenDoc.ref.update({
+                used: true,
+                usedAt: new Date()
+            });
+            
+            return {
+                success: true,
+                message: 'Password has been successfully reset. Please log in with your new password.'
+            };
+        } catch (userError) {
+            console.error("Error finding user or updating password:", userError);
+            return {
+                success: false,
+                message: 'Failed to reset password. User may no longer exist.'
+            };
+        }
+    } catch (error: any) {
+        console.error("Error resetting password:", error);
+        return {
+            success: false,
+            message: `Failed to reset password: ${error.message}`
+        };
+    }
 }
 
 

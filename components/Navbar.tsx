@@ -202,10 +202,10 @@ const Navbar = () => {
             ) : (
               <>
                 <Link href="/sign-in">
-                  <Button variant="ghost">Login</Button>
+                  <Button variant="ghost" className='cursor-pointer'>Login</Button>
                 </Link>
                 <Link href="/sign-up">
-                  <Button>Get Started</Button>
+                  <Button className='cursor-pointer'>Get Started</Button>
                 </Link>
               </>
             )}

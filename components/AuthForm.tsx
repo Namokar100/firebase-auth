@@ -486,7 +486,7 @@ export function AuthForm({
       }
       
       toast.success("Signed in with Google successfully.");
-      router.push("/home");
+      router.push("/");
     } catch (error: any) {
       // Make sure to sign out if there was an error with Google sign-in
       try {
@@ -600,7 +600,7 @@ export function AuthForm({
                   <Label htmlFor="password">Password</Label>
                   {isSignIn && (
                     <a
-                      href="#"
+                      href="/forgot-password"
                       className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                     >
                       Forgot your password?
@@ -618,9 +618,9 @@ export function AuthForm({
                 )}
               </div>
               
-              <Button 
+              <Button
                 type="submit" 
-                className="w-full mt-2" 
+                className="w-full mt-2 cursor-pointer" 
                 disabled={isSubmitting || isGoogleLoading}
               >
                 {isSubmitting 
@@ -642,7 +642,7 @@ export function AuthForm({
               
               <Button 
                 variant="outline" 
-                className="w-full" 
+                className="w-full cursor-pointer" 
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={isSubmitting || isGoogleLoading}
