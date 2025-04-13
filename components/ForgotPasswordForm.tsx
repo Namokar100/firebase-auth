@@ -82,13 +82,14 @@ export default function ForgotPasswordForm() {
               </p>
               <div className="flex justify-between mt-4">
                 <Link href="/sign-in">
-                  <Button variant="outline">Back to Login</Button>
+                  <Button variant="outline" className="rounded-sm">Back to Login</Button>
                 </Link>
                 <Button 
                   onClick={() => {
                     form.reset()
                     setIsSubmitted(false)
                   }}
+                  className="rounded-sm"
                 >
                   Try Again
                 </Button>
@@ -126,6 +127,7 @@ export default function ForgotPasswordForm() {
                           placeholder="johndoe@mail.com"
                           type="email"
                           autoComplete="email"
+                          className="rounded-sm"
                           {...field}
                         />
                       </FormControl>
@@ -135,7 +137,7 @@ export default function ForgotPasswordForm() {
                 />
                 <Button 
                   type="submit" 
-                  className="w-full cursor-pointer"
+                  className="w-full cursor-pointer rounded-sm"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Sending...' : 'Send Reset Link'}

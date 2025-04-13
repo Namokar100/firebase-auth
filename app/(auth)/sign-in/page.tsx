@@ -10,7 +10,7 @@ const AuthFormLoader = () => (
 
 const LoginPage = () => {
   return (
-    <div className='flex flex-col items-center justify-center'>
+    <div>
       <Suspense fallback={<AuthFormLoader />}>
         <AuthForm type='signin' />
       </Suspense>

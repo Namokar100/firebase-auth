@@ -98,13 +98,13 @@ const Navbar = () => {
   }, []);
   
   return (
-    <div className="border-b">
-      <div className='mx-12'>
-        <div className="flex h-16 items-center justify-between w-full ">
+    <div className="border-b shadow-sm bg-white dark:bg-card">
+      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between w-full">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="font-bold text-xl">
-              YourLogo
+            <Link href="/" className="font-bold text-xl text-primary">
+              FireAuth
             </Link>
           </div>
           
@@ -112,20 +112,20 @@ const Navbar = () => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Features</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="text-primary hover:text-primary/80 font-medium">Features</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px]">
-                    <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px] rounded-xl">
+                    <div className="grid grid-cols-2 gap-4">
                       <Link href="/features/feature-1" legacyBehavior passHref>
-                        <NavigationMenuLink className="flex flex-col gap-1 p-3 hover:bg-accent rounded-md">
-                          <div className="font-medium">Feature 1</div>
-                          <div className="text-sm text-muted-foreground">Description of feature 1</div>
+                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
+                          <div className="font-medium text-primary">Secure Authentication</div>
+                          <div className="text-sm text-muted-foreground">Multi-factor authentication for better security</div>
                         </NavigationMenuLink>
                       </Link>
                       <Link href="/features/feature-2" legacyBehavior passHref>
-                        <NavigationMenuLink className="flex flex-col gap-1 p-3 hover:bg-accent rounded-md">
-                          <div className="font-medium">Feature 2</div>
-                          <div className="text-sm text-muted-foreground">Description of feature 2</div>
+                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
+                          <div className="font-medium text-primary">Easy Integration</div>
+                          <div className="text-sm text-muted-foreground">Simple API for all your authentication needs</div>
                         </NavigationMenuLink>
                       </Link>
                     </div>
@@ -134,14 +134,14 @@ const Navbar = () => {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/pricing" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-primary/80 font-medium"}>
                     Pricing
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/documentation" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-primary/80 font-medium"}>
                     Documentation
                   </NavigationMenuLink>
                 </Link>
@@ -156,39 +156,39 @@ const Navbar = () => {
             ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="h-9 w-9 cursor-pointer">
+                  <Avatar className="h-10 w-10 cursor-pointer border-2 border-primary/10 shadow-sm hover:shadow-md transition-all duration-200">
                     <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email || ""} />
-                    <AvatarFallback>
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium">
                       {user.displayName 
                         ? `${user.displayName.split(' ')[0][0]}${user.displayName.split(' ')[1]?.[0] || ''}`
                         : user.email?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-md">
+                  <DropdownMenuLabel className="font-semibold text-primary">My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <Link href="/profile">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent focus:bg-accent transition duration-200">
-                      <User className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2">
+                      <User className="mr-2 h-4 w-4 text-primary/70" />
                       <span>Profile</span>
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/settings">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent focus:bg-accent transition duration-200">
-                      <Settings className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2">
+                      <Settings className="mr-2 h-4 w-4 text-primary/70" />
                       <span>Settings</span>
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/billing">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent focus:bg-accent transition duration-200">
-                      <CreditCard className="mr-2 h-4 w-4" />
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2">
+                      <CreditCard className="mr-2 h-4 w-4 text-primary/70" />
                       <span>Billing</span>
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                    className="cursor-pointer flex items-center text-red-500 hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600 transition duration-200"
+                    className="cursor-pointer flex items-center text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive rounded-lg transition duration-200 py-2"
                     onClick={() => {
                       // Navigate to the logout page that handles the logout process
                       router.push('/logout');
@@ -200,14 +200,18 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <>
+              <div className="flex items-center gap-4">
                 <Link href="/sign-in">
-                  <Button variant="ghost" className='cursor-pointer'>Login</Button>
+                  <Button variant="outline" className=" border-primary/20 hover:border-primary/30 hover:bg-primary/5 text-primary font-medium">
+                    Sign In
+                  </Button>
                 </Link>
                 <Link href="/sign-up">
-                  <Button className='cursor-pointer'>Get Started</Button>
+                  <Button className=" bg-primary hover:bg-primary/90 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200">
+                    Join for free
+                  </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
