@@ -26,7 +26,7 @@ import { signIn, signUp, sendVerificationEmail } from "@/lib/actions/auth.action
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { SignInFormValues, SignUpFormValues, signInSchema, signUpSchema } from "@/lib/validations/auth";
-import { AlertCircle, Check, Info } from "lucide-react";
+import { AlertCircle, Check, Info, Eye, EyeOff } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FieldErrors } from "react-hook-form";
 import AuthLoadingPage from "./AuthLoadingPage";
@@ -50,6 +50,7 @@ export function AuthForm({
   const [verificationEmail, setVerificationEmail] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Ref to track if toast was shown
   const toastShownRef = useRef(false);
@@ -535,6 +536,11 @@ export function AuthForm({
     }
   };
   
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+  
   // Render verification alert if verification process is in progress
   const renderVerificationAlert = () => {
     if (!verificationEmail) return null;
@@ -639,12 +645,25 @@ export function AuthForm({
                     </a>
                   )}
                 </div>
-                <Input 
-                  id="password" 
-                  type="password"
-                  {...register("password")}
-                  aria-invalid={errors.password ? "true" : "false"}
-                />
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"}
+                    {...register("password")}
+                    aria-invalid={errors.password ? "true" : "false"}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                    onClick={togglePasswordVisibility}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
                 {errors.password && (
                   <p className="text-sm text-red-500">{errors.password.message}</p>
                 )}
