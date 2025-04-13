@@ -10,7 +10,7 @@ const AuthFormLoader = () => (
 
 const LoginPage = () => {
   return (
-    <div>
+    <div className="mt-0">
       <Suspense fallback={<AuthFormLoader />}>
         <AuthForm type='signin' />
       </Suspense>

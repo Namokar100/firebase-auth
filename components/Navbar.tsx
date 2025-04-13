@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Settings, CreditCard, LogOut } from "lucide-react";
 import { auth } from "@/firebase/client";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -42,6 +42,8 @@ const Navbar = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const pathname = usePathname(); // Get current pathname
+  const isHomepage = pathname === '/'; // Check if we're on the homepage
   
   // Listen for auth state changes
   useEffect(() => {
@@ -97,8 +99,13 @@ const Navbar = () => {
     return () => unsubscribe();
   }, []);
   
+  // Apply the appropriate classNames based on whether it's the homepage or not
+  const navbarClassName = isHomepage 
+    ? "fixed top-0 left-0 right-0 z-50 border-b shadow-sm bg-white dark:bg-card"
+    : "border-b shadow-sm bg-white dark:bg-card";
+  
   return (
-    <div className="border-b shadow-sm bg-white dark:bg-card">
+    <div className={navbarClassName}>
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between w-full">
           {/* Logo */}

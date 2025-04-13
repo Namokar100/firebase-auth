@@ -587,14 +587,14 @@ export function AuthForm({
   // Show verification sent UI if a verification email has been sent
   if (verificationSent) {
     return (
-      <Card className="mx-auto max-w-md shadow-lg rounded-sm border border-border bg-white dark:bg-card">
-        <CardHeader className="space-y-1">
+      <Card className="mx-auto max-w-md shadow-md rounded-sm border border-border bg-white dark:bg-card">
+        <CardHeader className="space-y-1 px-6 pt-4 pb-2">
           <CardTitle className="text-2xl font-bold text-center text-primary">Verify Your Email</CardTitle>
           <CardDescription className="text-center">
             We've sent a verification email to <span className="font-medium">{verificationEmail || getValues("email")}</span>
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 px-6 py-2">
           <Alert variant="default" className="bg-primary/5 text-primary border-primary/10 rounded-sm">
             <Info className="h-4 w-4" />
             <AlertTitle>Check your inbox</AlertTitle>
@@ -617,7 +617,7 @@ export function AuthForm({
             </Button>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="p-4 pt-2">
           <Button
             variant="ghost"
             onClick={() => {
@@ -634,8 +634,8 @@ export function AuthForm({
   }
 
   return (
-    <Card className={cn("mx-auto max-w-md shadow-lg rounded-sm border border-border bg-white dark:bg-card", className)} {...props}>
-      <CardHeader className="space-y-1">
+    <Card className={cn("mx-auto max-w-md shadow-md rounded-sm border border-border bg-white dark:bg-card", className)} {...props}>
+      <CardHeader className="space-y-1 px-6 pt-4 pb-2">
         <CardTitle className="text-2xl font-bold text-center text-primary">
           {isSignIn ? "Welcome Back" : "Create an Account"}
         </CardTitle>
@@ -645,7 +645,7 @@ export function AuthForm({
             : "Fill in the information below to create your account"}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 px-6 py-2">
         <div className="grid gap-6">
           <div className="grid gap-4">
             {!isSignIn && (
@@ -803,7 +803,7 @@ export function AuthForm({
           </Button>
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col items-center justify-center p-6 pt-2">
+      <CardFooter className="flex flex-col items-center justify-center p-4 pt-2">
         <p className="mt-2 text-sm text-center text-muted-foreground">
           {isSignIn ? "Don't have an account? " : "Already have an account? "}
           <Link 

@@ -70,12 +70,12 @@ export default function AuthLoadingPage({
   }, [router, redirectTo, timeoutMs]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-      <div className="bg-white dark:bg-card rounded-2xl shadow-lg p-8 max-w-md w-full border border-border/40">
+    <div className="fixed inset-0 flex items-center justify-center w-full h-full">
+      <div className="bg-white dark:bg-card rounded-sm shadow-md p-6 pt-4 max-w-md w-full border border-border/40 mx-auto">
         {/* Animation */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <div className="relative">
-            <svg className="animate-spin h-16 w-16 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin h-14 w-14 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -83,23 +83,23 @@ export default function AuthLoadingPage({
         </div>
         
         {/* Message */}
-        <h2 className="text-2xl font-bold text-primary text-center">
+        <h2 className="text-xl font-bold text-primary text-center">
           {messages[type].title}<span className="inline-block w-6">{dots}</span>
         </h2>
         
-        <p className="text-muted-foreground mt-3 text-center">
+        <p className="text-muted-foreground mt-2 text-center">
           {messages[type].description}
         </p>
         
         {/* Progress Bar */}
-        <div className="mt-6 w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+        <div className="mt-4 w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
           <div 
-            className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
+            className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
         
-        <p className="text-xs text-muted-foreground mt-3 text-center">
+        <p className="text-xs text-muted-foreground mt-2 text-center">
           You will be redirected automatically...
         </p>
       </div>
