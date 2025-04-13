@@ -21,9 +21,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User, Settings, CreditCard } from "lucide-react";
+import { User, Settings, CreditCard, LogOut } from "lucide-react";
 import { auth } from "@/firebase/client";
-import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
+import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -97,29 +97,6 @@ const Navbar = () => {
     return () => unsubscribe();
   }, []);
   
-  // Handle user logout
-  const handleLogout = async () => {
-    try {
-      setLoading(true); // Show loading state during logout
-      await signOut(auth);
-      
-      // Clear cached user data
-      localStorage.removeItem('authUser');
-      
-      // Call the server action to clear the session cookie
-      await fetch('/api/auth/signout', { method: 'POST' });
-      
-      // Show success message and redirect
-      toast.success('Logged out successfully');
-      router.push('/sign-in');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Failed to log out. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   return (
     <div className="border-b">
       <div className='mx-12'>
@@ -191,22 +168,31 @@ const Navbar = () => {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Billing</span>
-                  </DropdownMenuItem>
+                  <Link href="/profile">
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent focus:bg-accent transition duration-200">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/settings">
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent focus:bg-accent transition duration-200">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/billing">
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent focus:bg-accent transition duration-200">
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      <span>Billing</span>
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                    className="text-red-600 focus:text-red-600 focus:bg-red-100"
-                    onClick={handleLogout}
+                    className="cursor-pointer flex items-center text-red-500 hover:bg-red-50 hover:text-red-600 focus:bg-red-50 focus:text-red-600 transition duration-200"
+                    onClick={() => {
+                      // Navigate to the logout page that handles the logout process
+                      router.push('/logout');
+                    }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
