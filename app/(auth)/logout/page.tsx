@@ -36,13 +36,15 @@ export default function LogoutPage() {
   }, [router]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh]">
-      {/* Spinner */}
-      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-primary mb-4"></div>
-      
-      {/* Message */}
-      <h2 className="text-2xl font-semibold text-foreground">Logging out...</h2>
-      <p className="text-muted-foreground mt-2">Please wait while we securely log you out.</p>
+    <div className="fixed inset-0 flex items-center justify-center w-full h-full">
+      <div className="bg-white dark:bg-card rounded-sm shadow-md p-6 pt-4 max-w-md w-full border border-border/40 mx-auto text-center">
+        {/* Spinner */}
+        <div className="animate-spin rounded-sm h-14 w-14 border-t-2 border-b-2 border-primary mb-3 mx-auto"></div>
+        
+        {/* Message */}
+        <h2 className="text-xl font-semibold text-foreground">Logging out...</h2>
+        <p className="text-muted-foreground mt-2">Please wait while we securely log you out.</p>
+      </div>
     </div>
   );
 } 

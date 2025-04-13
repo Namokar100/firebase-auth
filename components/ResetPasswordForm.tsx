@@ -120,7 +120,7 @@ export default function ResetPasswordForm() {
               Please request a new password reset link.
             </p>
             <Link href="/forgot-password">
-              <Button className="w-full">Request New Link</Button>
+              <Button className="w-full rounded-sm">Request New Link</Button>
             </Link>
           </CardContent>
         </Card>
@@ -143,7 +143,7 @@ export default function ResetPasswordForm() {
               You will be redirected to the login page in a moment, or you can click the button below.
             </p>
             <Link href="/sign-in">
-              <Button className="w-full">Go to Login</Button>
+              <Button className="w-full rounded-sm">Go to Login</Button>
             </Link>
           </CardContent>
         </Card>
@@ -173,6 +173,7 @@ export default function ResetPasswordForm() {
                       <Input
                         type="password"
                         placeholder="Enter your new password"
+                        className="rounded-sm"
                         {...field}
                       />
                     </FormControl>
@@ -191,6 +192,7 @@ export default function ResetPasswordForm() {
                       <Input
                         type="password"
                         placeholder="Confirm your new password"
+                        className="rounded-sm"
                         {...field}
                       />
                     </FormControl>
@@ -201,7 +203,7 @@ export default function ResetPasswordForm() {
               
               <Button 
                 type="submit" 
-                className="w-full mt-4 cursor-pointer"
+                className="w-full mt-4 cursor-pointer rounded-sm"
                 disabled={isLoading}
               >
                 {isLoading ? 'Resetting...' : 'Reset Password'}
