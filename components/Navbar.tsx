@@ -21,12 +21,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Settings, CreditCard, LogOut } from "lucide-react";
+import { User, Settings, CreditCard, LogOut, Moon, Sun } from "lucide-react";
 import { auth } from "@/firebase/client";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { useRouter, usePathname } from 'next/navigation';
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTheme } from "@/components/ThemeProvider";
 
 // Define interface for cached user data
 interface CachedUser {
@@ -44,6 +45,7 @@ const Navbar = () => {
   const router = useRouter();
   const pathname = usePathname(); // Get current pathname
   const isHomepage = pathname === '/'; // Check if we're on the homepage
+  const { theme, toggleTheme } = useTheme(); // Get theme and toggle function
   
   // Listen for auth state changes
   useEffect(() => {
@@ -101,8 +103,8 @@ const Navbar = () => {
   
   // Apply the appropriate classNames based on whether it's the homepage or not
   const navbarClassName = isHomepage 
-    ? "fixed top-0 left-0 right-0 z-50 border-b shadow-sm bg-white dark:bg-card"
-    : "border-b shadow-sm bg-white dark:bg-card";
+    ? "fixed top-0 left-0 right-0 z-50 border-b shadow-sm bg-white dark:bg-[#1e2329] dark:border-[#4285F4]/10"
+    : "border-b shadow-sm bg-white dark:bg-[#1e2329] dark:border-[#4285F4]/10";
   
   return (
     <div className={navbarClassName}>
@@ -110,7 +112,7 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between w-full">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="font-bold text-xl text-primary">
+            <Link href="/" className="font-bold text-xl text-primary dark:text-[#4285F4]">
               FireAuth
             </Link>
           </div>
@@ -119,20 +121,20 @@ const Navbar = () => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="text-primary hover:text-primary/80 font-medium">Features</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="text-primary hover:text-[#4285F4] hover:bg-accent rounded-lg font-medium dark:text-white dark:hover:text-[#4285F4] dark:hover:bg-[#2a3138]">Features</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px] rounded-xl">
+                  <div className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px] rounded-xl dark:bg-card dark:border dark:border-[#4285F4]/10">
                     <div className="grid grid-cols-2 gap-4">
                       <Link href="/features/feature-1" legacyBehavior passHref>
-                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
-                          <div className="font-medium text-primary">Secure Authentication</div>
-                          <div className="text-sm text-muted-foreground">Multi-factor authentication for better security</div>
+                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md dark:hover:bg-[#2a3138] dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.1)]">
+                          <div className="font-medium text-primary dark:text-[#4285F4]">Secure Authentication</div>
+                          <div className="text-sm text-muted-foreground dark:text-white/70">Multi-factor authentication for better security</div>
                         </NavigationMenuLink>
                       </Link>
                       <Link href="/features/feature-2" legacyBehavior passHref>
-                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md">
-                          <div className="font-medium text-primary">Easy Integration</div>
-                          <div className="text-sm text-muted-foreground">Simple API for all your authentication needs</div>
+                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md dark:hover:bg-[#2a3138] dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.1)]">
+                          <div className="font-medium text-primary dark:text-[#0F9D58]">Easy Integration</div>
+                          <div className="text-sm text-muted-foreground dark:text-white/70">Simple API for all your authentication needs</div>
                         </NavigationMenuLink>
                       </Link>
                     </div>
@@ -141,14 +143,14 @@ const Navbar = () => {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/pricing" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-primary/80 font-medium"}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-[#4285F4] hover:bg-accent rounded-lg font-medium dark:text-white dark:hover:text-[#4285F4] dark:hover:bg-[#2a3138]"}>
                     Pricing
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/documentation" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-primary/80 font-medium"}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-[#4285F4] hover:bg-accent rounded-lg font-medium dark:text-white dark:hover:text-[#4285F4] dark:hover:bg-[#2a3138]"}>
                     Documentation
                   </NavigationMenuLink>
                 </Link>
@@ -163,39 +165,56 @@ const Navbar = () => {
             ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="h-10 w-10 cursor-pointer border-2 border-primary/10 shadow-sm hover:shadow-md transition-all duration-200">
+                  <Avatar className="h-10 w-10 cursor-pointer border-2 border-primary/10 shadow-sm hover:shadow-md transition-all duration-200 dark:border-[#4285F4]/30">
                     <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email || ""} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium dark:bg-[#4285F4]/10 dark:text-[#4285F4]">
                       {user.displayName 
                         ? `${user.displayName.split(' ')[0][0]}${user.displayName.split(' ')[1]?.[0] || ''}`
                         : user.email?.[0]?.toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-md">
-                  <DropdownMenuLabel className="font-semibold text-primary">My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-md dark:border dark:border-[#4285F4]/10 dark:shadow-[0_4px_12px_rgba(66,133,244,0.1)]">
+                  <DropdownMenuLabel className="font-semibold text-primary dark:text-[#4285F4]">My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="dark:border-[#4285F4]/10" />
                   <Link href="/profile">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2">
-                      <User className="mr-2 h-4 w-4 text-primary/70" />
-                      <span>Profile</span>
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5">
+                      <User className="mr-2 h-4 w-4 text-primary/70 dark:text-[#4285F4]" />
+                      <span className="dark:text-white">Profile</span>
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/settings">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2">
-                      <Settings className="mr-2 h-4 w-4 text-primary/70" />
-                      <span>Settings</span>
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5">
+                      <Settings className="mr-2 h-4 w-4 text-primary/70 dark:text-[#4285F4]" />
+                      <span className="dark:text-white">Settings</span>
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/billing">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2">
-                      <CreditCard className="mr-2 h-4 w-4 text-primary/70" />
-                      <span>Billing</span>
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5">
+                      <CreditCard className="mr-2 h-4 w-4 text-primary/70 dark:text-[#4285F4]" />
+                      <span className="dark:text-white">Billing</span>
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuSeparator className="dark:border-[#4285F4]/10" />
+                  <DropdownMenuItem
+                    className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5"
+                    onClick={toggleTheme}
+                  >
+                    {theme === 'dark' ? (
+                      <>
+                        <Sun className="mr-2 h-4 w-4 text-primary/70 dark:text-[#F4B400]" />
+                        <span className="dark:text-white">Disable Dark Mode</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="mr-2 h-4 w-4 text-primary/70" />
+                        <span>Enable Dark Mode</span>
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="dark:border-[#4285F4]/10" />
                   <DropdownMenuItem 
-                    className="cursor-pointer flex items-center text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive rounded-lg transition duration-200 py-2"
+                    className="cursor-pointer flex items-center text-destructive hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive rounded-lg transition duration-200 py-2 dark:text-[#DB4437] dark:hover:bg-[#DB4437]/10"
                     onClick={() => {
                       // Navigate to the logout page that handles the logout process
                       router.push('/logout');
@@ -209,12 +228,12 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-4">
                 <Link href="/sign-in">
-                  <Button variant="outline" className=" border-primary/20 hover:border-primary/30 hover:bg-primary/5 text-primary font-medium">
+                  <Button variant="outline" className="border-primary/20 hover:border-primary/30 hover:bg-primary/5 text-primary font-medium dark:border-[#4285F4]/30 dark:text-[#4285F4] dark:hover:bg-[#4285F4]/5">
                     Sign In
                   </Button>
                 </Link>
                 <Link href="/sign-up">
-                  <Button className=" bg-primary hover:bg-primary/90 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200">
+                  <Button className="bg-primary hover:bg-primary/90 text-white font-medium shadow-sm hover:shadow-md transition-all duration-200 dark:bg-[#4285F4] dark:hover:bg-[#4285F4]/90 dark:shadow-[0_2px_5px_rgba(66,133,244,0.2)] dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.3)]">
                     Join for free
                   </Button>
                 </Link>

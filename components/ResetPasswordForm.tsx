@@ -122,7 +122,7 @@ export default function ResetPasswordForm() {
               Please request a new password reset link.
             </p>
             <Link href="/forgot-password">
-              <Button className="w-full rounded-sm">Request New Link</Button>
+              <Button className="w-full rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600">Request New Link</Button>
             </Link>
           </CardContent>
         </Card>
@@ -145,7 +145,7 @@ export default function ResetPasswordForm() {
               You will be redirected to the login page in a moment, or you can click the button below.
             </p>
             <Link href="/sign-in">
-              <Button className="w-full rounded-sm">Go to Login</Button>
+              <Button className="w-full rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600">Go to Login</Button>
             </Link>
           </CardContent>
         </Card>
@@ -181,7 +181,7 @@ export default function ResetPasswordForm() {
                         />
                         <button
                           type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? (
@@ -213,7 +213,7 @@ export default function ResetPasswordForm() {
                         />
                         <button
                           type="button"
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                           {showConfirmPassword ? (
@@ -231,7 +231,7 @@ export default function ResetPasswordForm() {
               
               <Button 
                 type="submit" 
-                className="w-full mt-4 cursor-pointer rounded-sm"
+                className="w-full mt-4 cursor-pointer rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600"
                 disabled={isLoading}
               >
                 {isLoading ? 'Resetting...' : 'Reset Password'}
@@ -242,7 +242,7 @@ export default function ResetPasswordForm() {
         <CardFooter className="flex justify-center border-t pt-4">
           <p className="text-sm text-muted-foreground">
             Remembered your password?{' '}
-            <Link href="/sign-in" className="text-primary hover:underline inline-flex items-center gap-1">
+            <Link href="/sign-in" className="text-neutral-700 hover:text-neutral-900 font-medium dark:text-neutral-300 dark:hover:text-neutral-100 inline-flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" />
               Sign in
             </Link>

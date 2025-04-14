@@ -82,14 +82,14 @@ export default function ForgotPasswordForm() {
               </p>
               <div className="flex justify-between mt-4">
                 <Link href="/sign-in">
-                  <Button variant="outline" className="rounded-sm">Back to Login</Button>
+                  <Button variant="outline" className="rounded-sm border-neutral-300 hover:border-neutral-400 hover:bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:hover:border-neutral-600 dark:hover:bg-neutral-800 dark:text-neutral-300">Back to Login</Button>
                 </Link>
                 <Button 
                   onClick={() => {
                     form.reset()
                     setIsSubmitted(false)
                   }}
-                  className="rounded-sm"
+                  className="rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600"
                 >
                   Try Again
                 </Button>
@@ -137,13 +137,13 @@ export default function ForgotPasswordForm() {
                 />
                 <Button 
                   type="submit" 
-                  className="w-full cursor-pointer rounded-sm"
+                  className="w-full cursor-pointer rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Sending...' : 'Send Reset Link'}
                 </Button>
                 <div className="text-center mt-2">
-                  <Link href="/sign-in" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+                  <Link href="/sign-in" className="text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200 inline-flex items-center gap-1">
                     <ArrowLeft className="h-4 w-4" />
                     Back to Login
                   </Link>
