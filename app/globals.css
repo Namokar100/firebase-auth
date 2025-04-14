@@ -43,6 +43,11 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* Google colors */
+  --color-google-blue: var(--google-blue);
+  --color-google-red: var(--google-red);
+  --color-google-yellow: var(--google-yellow);
+  --color-google-green: var(--google-green);
 }
 
 :root {
@@ -79,6 +84,11 @@
   --sidebar-accent-foreground: #364049;
   --sidebar-border: #e0e0e0;
   --sidebar-ring: rgba(54, 64, 73, 0.3);
+  /* Google colors */
+  --google-blue: #4285F4;
+  --google-red: #DB4437;
+  --google-yellow: #F4B400;
+  --google-green: #0F9D58;
 }
 
 .dark {
@@ -88,32 +98,37 @@
   --card-foreground: #ffffff;
   --popover: #1e2329;
   --popover-foreground: #ffffff;
-  --primary: #364049;
+  --primary: #4285F4; /* Changed to Google blue */
   --primary-foreground: #ffffff;
   --secondary: #2a3138;
   --secondary-foreground: #ffffff;
   --muted: #2a3138;
   --muted-foreground: rgba(255, 255, 255, 0.7);
-  --accent: #2a3138;
-  --accent-foreground: #ffffff;
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(1 0 0);
+  --accent: #F4B400; /* Changed to Google yellow */
+  --accent-foreground: #121417;
+  --destructive: #DB4437; /* Changed to Google red */
+  --destructive-foreground: #ffffff;
   --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.15);
   --ring: rgba(255, 255, 255, 0.3);
-  --chart-1: #4a5a6b;
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: #4285F4; /* Changed to Google blue */
+  --chart-2: #0F9D58; /* Changed to Google green */
+  --chart-3: #F4B400; /* Changed to Google yellow */
+  --chart-4: #DB4437; /* Changed to Google red */
+  --chart-5: #7e57c2; /* A nice purple to complement the Google colors */
   --sidebar: #1e2329;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #4a5a6b;
+  --sidebar-primary: #4285F4; /* Changed to Google blue */
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #2a3138;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: rgba(255, 255, 255, 0.1);
   --sidebar-ring: rgba(255, 255, 255, 0.3);
+  /* Google colors (slightly brighter for dark mode) */
+  --google-blue: #4285F4;
+  --google-red: #DB4437;
+  --google-yellow: #F4B400;
+  --google-green: #0F9D58;
 }
 
 @layer base {
@@ -124,19 +139,19 @@
     @apply bg-background text-foreground font-sans;
   }
   h1 {
-    @apply text-4xl font-bold tracking-tight text-primary;
+    @apply text-4xl font-bold tracking-tight text-primary dark:text-white;
   }
   h2 {
-    @apply text-3xl font-semibold tracking-tight text-primary;
+    @apply text-3xl font-semibold tracking-tight text-primary dark:text-white;
   }
   h3 {
-    @apply text-2xl font-semibold text-primary;
+    @apply text-2xl font-semibold text-primary dark:text-white;
   }
   h4 {
-    @apply text-xl font-medium text-primary;
+    @apply text-xl font-medium text-primary dark:text-white;
   }
   h5 {
-    @apply text-lg font-medium text-primary;
+    @apply text-lg font-medium text-primary dark:text-white;
   }
   p {
     @apply leading-relaxed;
@@ -145,17 +160,29 @@
 
 /* Enhanced interactive elements */
 .btn-primary {
-  @apply bg-primary text-white font-medium py-2 px-4 rounded-sm shadow-sm hover:shadow-md transition-all duration-200 ease-in-out hover:opacity-90 focus:ring-2 focus:ring-primary/20 focus:outline-none;
+  @apply bg-primary text-white font-medium py-2 px-4 rounded-sm shadow-sm hover:shadow-md transition-all duration-200 ease-in-out hover:opacity-90 focus:ring-2 focus:ring-primary/20 focus:outline-none dark:bg-[#4285F4] dark:hover:bg-[#4285F4]/90;
 }
 
 .btn-secondary {
-  @apply bg-secondary text-primary font-medium py-2 px-4 rounded-sm shadow-sm hover:shadow-md transition-all duration-200 ease-in-out hover:bg-gray-100 focus:ring-2 focus:ring-primary/20 focus:outline-none;
+  @apply bg-secondary text-primary font-medium py-2 px-4 rounded-sm shadow-sm hover:shadow-md transition-all duration-200 ease-in-out hover:bg-gray-100 focus:ring-2 focus:ring-primary/20 focus:outline-none dark:bg-[#2a3138] dark:text-white dark:hover:bg-[#353c43];
+}
+
+.btn-success {
+  @apply bg-[#0F9D58] text-white font-medium py-2 px-4 rounded-sm shadow-sm hover:shadow-md transition-all duration-200 ease-in-out hover:bg-[#0F9D58]/90 focus:ring-2 focus:ring-[#0F9D58]/20 focus:outline-none;
+}
+
+.btn-warning {
+  @apply bg-[#F4B400] text-white font-medium py-2 px-4 rounded-sm shadow-sm hover:shadow-md transition-all duration-200 ease-in-out hover:bg-[#F4B400]/90 focus:ring-2 focus:ring-[#F4B400]/20 focus:outline-none;
+}
+
+.btn-danger {
+  @apply bg-[#DB4437] text-white font-medium py-2 px-4 rounded-sm shadow-sm hover:shadow-md transition-all duration-200 ease-in-out hover:bg-[#DB4437]/90 focus:ring-2 focus:ring-[#DB4437]/20 focus:outline-none;
 }
 
 .card-enhanced {
-  @apply bg-white rounded-md shadow-sm hover:shadow-md transition-all duration-200 border border-border p-6;
+  @apply bg-white rounded-md shadow-sm hover:shadow-md transition-all duration-200 border border-border p-6 dark:bg-card dark:border-white/10 dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.1)];
 }
 
 .input-enhanced {
-  @apply rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all duration-200;
+  @apply rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/60 transition-all duration-200 dark:focus:ring-[#4285F4]/30 dark:focus:border-[#4285F4]/60;
 }

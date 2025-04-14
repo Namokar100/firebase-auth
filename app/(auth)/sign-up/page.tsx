@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { AuthForm } from '@/components/AuthForm'
+import { AuthForm } from '@/components/auth'
 
 // Loading fallback for Suspense
 const AuthFormLoader = () => (

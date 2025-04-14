@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 import {
   Form,
@@ -47,6 +47,8 @@ export default function ResetPasswordForm() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [token, setToken] = useState<string | null>(null)
   const [isInvalidToken, setIsInvalidToken] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -120,7 +122,7 @@ export default function ResetPasswordForm() {
               Please request a new password reset link.
             </p>
             <Link href="/forgot-password">
-              <Button className="w-full rounded-sm">Request New Link</Button>
+              <Button className="w-full rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600">Request New Link</Button>
             </Link>
           </CardContent>
         </Card>
@@ -143,7 +145,7 @@ export default function ResetPasswordForm() {
               You will be redirected to the login page in a moment, or you can click the button below.
             </p>
             <Link href="/sign-in">
-              <Button className="w-full rounded-sm">Go to Login</Button>
+              <Button className="w-full rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600">Go to Login</Button>
             </Link>
           </CardContent>
         </Card>
@@ -170,12 +172,25 @@ export default function ResetPasswordForm() {
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Enter your new password"
-                        className="rounded-sm"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your new password"
+                          className="rounded-sm pr-10"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -189,12 +204,25 @@ export default function ResetPasswordForm() {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        placeholder="Confirm your new password"
-                        className="rounded-sm"
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="Confirm your new password"
+                          className="rounded-sm pr-10"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -203,7 +231,7 @@ export default function ResetPasswordForm() {
               
               <Button 
                 type="submit" 
-                className="w-full mt-4 cursor-pointer rounded-sm"
+                className="w-full mt-4 cursor-pointer rounded-sm bg-neutral-800 hover:bg-neutral-700 text-white dark:bg-neutral-700 dark:hover:bg-neutral-600"
                 disabled={isLoading}
               >
                 {isLoading ? 'Resetting...' : 'Reset Password'}
@@ -214,7 +242,7 @@ export default function ResetPasswordForm() {
         <CardFooter className="flex justify-center border-t pt-4">
           <p className="text-sm text-muted-foreground">
             Remembered your password?{' '}
-            <Link href="/sign-in" className="text-primary hover:underline inline-flex items-center gap-1">
+            <Link href="/sign-in" className="text-neutral-700 hover:text-neutral-900 font-medium dark:text-neutral-300 dark:hover:text-neutral-100 inline-flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" />
               Sign in
             </Link>
