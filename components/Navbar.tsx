@@ -121,18 +121,18 @@ const Navbar = () => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="!text-primary hover:!text-[#4285F4] hover:!bg-[#4285F4]/10 data-[state=open]:!bg-[#4285F4]/10 data-[state=open]:!text-[#4285F4] rounded-lg font-medium dark:!text-white dark:hover:!text-[#4285F4] dark:hover:!bg-[#2a3138] dark:data-[state=open]:!bg-[#2a3138] dark:data-[state=open]:!text-[#4285F4]">Features</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="!bg-white hover:!bg-[#EBF3FF] data-[hover=true]:!bg-[#EBF3FF] data-[state=open]:!bg-[#EBF3FF] !text-primary hover:!text-[#4285F4] data-[hover=true]:!text-[#4285F4] data-[state=open]:!text-[#4285F4] !shadow-none rounded-lg font-medium dark:!bg-[#1e2329] dark:hover:!bg-[#2a3138] dark:data-[hover=true]:!bg-[#2a3138] dark:data-[state=open]:!bg-[#2a3138] dark:!text-white dark:hover:!text-[#4285F4] dark:data-[hover=true]:!text-[#4285F4] dark:data-[state=open]:!text-[#4285F4] !border-0">Features</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px] rounded-xl dark:bg-card dark:border dark:border-[#4285F4]/10">
+                  <div className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px] rounded-xl dark:bg-[#1e2329] dark:border dark:border-[#4285F4]/10">
                     <div className="grid grid-cols-2 gap-4">
                       <Link href="/features/feature-1" legacyBehavior passHref>
-                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md dark:hover:bg-[#2a3138] dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.1)]">
+                        <NavigationMenuLink className="flex flex-col gap-1 p-4 !bg-white hover:!bg-[#EBF3FF] rounded-xl transition-all duration-200 shadow-sm hover:shadow-md dark:!bg-[#1e2329] dark:hover:!bg-[#2a3138] dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.1)]">
                           <div className="font-medium text-primary dark:text-[#4285F4]">Secure Authentication</div>
                           <div className="text-sm text-muted-foreground dark:text-white/70">Multi-factor authentication for better security</div>
                         </NavigationMenuLink>
                       </Link>
                       <Link href="/features/feature-2" legacyBehavior passHref>
-                        <NavigationMenuLink className="flex flex-col gap-1 p-4 hover:bg-accent rounded-xl transition-all duration-200 shadow-sm hover:shadow-md dark:hover:bg-[#2a3138] dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.1)]">
+                        <NavigationMenuLink className="flex flex-col gap-1 p-4 !bg-white hover:!bg-[#EBF3FF] rounded-xl transition-all duration-200 shadow-sm hover:shadow-md dark:!bg-[#1e2329] dark:hover:!bg-[#2a3138] dark:hover:shadow-[0_4px_12px_rgba(66,133,244,0.1)]">
                           <div className="font-medium text-primary dark:text-[#0F9D58]">Easy Integration</div>
                           <div className="text-sm text-muted-foreground dark:text-white/70">Simple API for all your authentication needs</div>
                         </NavigationMenuLink>
@@ -143,14 +143,14 @@ const Navbar = () => {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/pricing" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " !text-primary hover:!text-[#4285F4] hover:!bg-[#4285F4]/10 rounded-lg font-medium dark:!text-white dark:hover:!text-[#4285F4] dark:hover:!bg-[#2a3138]"}>
+                  <NavigationMenuLink className="!bg-white hover:!bg-[#EBF3FF] focus:!bg-[#EBF3FF] active:!bg-[#EBF3FF] !text-primary hover:!text-[#4285F4] focus:!text-[#4285F4] active:!text-[#4285F4] !shadow-none inline-flex h-10 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors dark:!bg-[#1e2329] dark:hover:!bg-[#2a3138] dark:focus:!bg-[#2a3138] dark:active:!bg-[#2a3138] dark:!text-white dark:hover:!text-[#4285F4] dark:focus:!text-[#4285F4] dark:active:!text-[#4285F4]">
                     Pricing
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/documentation" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " !text-primary hover:!text-[#4285F4] hover:!bg-[#4285F4]/10 rounded-lg font-medium dark:!text-white dark:hover:!text-[#4285F4] dark:hover:!bg-[#2a3138]"}>
+                  <NavigationMenuLink className="!bg-white hover:!bg-[#EBF3FF] focus:!bg-[#EBF3FF] active:!bg-[#EBF3FF] !text-primary hover:!text-[#4285F4] focus:!text-[#4285F4] active:!text-[#4285F4] !shadow-none inline-flex h-10 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors dark:!bg-[#1e2329] dark:hover:!bg-[#2a3138] dark:focus:!bg-[#2a3138] dark:active:!bg-[#2a3138] dark:!text-white dark:hover:!text-[#4285F4] dark:focus:!text-[#4285F4] dark:active:!text-[#4285F4]">
                     Documentation
                   </NavigationMenuLink>
                 </Link>
