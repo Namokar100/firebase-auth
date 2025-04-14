@@ -112,7 +112,7 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between w-full">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="font-bold text-xl text-primary dark:text-[#4285F4]">
+            <Link href="/" className="font-bold text-xl text-[#4285F4]">
               FireAuth
             </Link>
           </div>
@@ -121,7 +121,7 @@ const Navbar = () => {
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="text-primary hover:text-[#4285F4] hover:bg-accent rounded-lg font-medium dark:text-white dark:hover:text-[#4285F4] dark:hover:bg-[#2a3138]">Features</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="!text-primary hover:!text-[#4285F4] hover:!bg-[#4285F4]/10 data-[state=open]:!bg-[#4285F4]/10 data-[state=open]:!text-[#4285F4] rounded-lg font-medium dark:!text-white dark:hover:!text-[#4285F4] dark:hover:!bg-[#2a3138] dark:data-[state=open]:!bg-[#2a3138] dark:data-[state=open]:!text-[#4285F4]">Features</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <div className="grid gap-3 p-6 w-[400px] md:w-[500px] lg:w-[600px] rounded-xl dark:bg-card dark:border dark:border-[#4285F4]/10">
                     <div className="grid grid-cols-2 gap-4">
@@ -143,14 +143,14 @@ const Navbar = () => {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/pricing" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-[#4285F4] hover:bg-accent rounded-lg font-medium dark:text-white dark:hover:text-[#4285F4] dark:hover:bg-[#2a3138]"}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " !text-primary hover:!text-[#4285F4] hover:!bg-[#4285F4]/10 rounded-lg font-medium dark:!text-white dark:hover:!text-[#4285F4] dark:hover:!bg-[#2a3138]"}>
                     Pricing
                   </NavigationMenuLink>
                 </Link>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <Link href="/documentation" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " text-primary hover:text-[#4285F4] hover:bg-accent rounded-lg font-medium dark:text-white dark:hover:text-[#4285F4] dark:hover:bg-[#2a3138]"}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle() + " !text-primary hover:!text-[#4285F4] hover:!bg-[#4285F4]/10 rounded-lg font-medium dark:!text-white dark:hover:!text-[#4285F4] dark:hover:!bg-[#2a3138]"}>
                     Documentation
                   </NavigationMenuLink>
                 </Link>
@@ -165,9 +165,9 @@ const Navbar = () => {
             ) : user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Avatar className="h-10 w-10 cursor-pointer border-2 border-primary/10 shadow-sm hover:shadow-md transition-all duration-200 dark:border-[#4285F4]/30">
+                  <Avatar className="h-10 w-10 cursor-pointer border-2 border-[#4285F4]/30 shadow-sm hover:shadow-md transition-all duration-200">
                     <AvatarImage src={user.photoURL || ""} alt={user.displayName || user.email || ""} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium dark:bg-[#4285F4]/10 dark:text-[#4285F4]">
+                    <AvatarFallback className="bg-[#4285F4]/10 text-[#4285F4] font-medium">
                       {user.displayName 
                         ? `${user.displayName.split(' ')[0][0]}${user.displayName.split(' ')[1]?.[0] || ''}`
                         : user.email?.[0]?.toUpperCase() || 'U'}
@@ -178,26 +178,26 @@ const Navbar = () => {
                   <DropdownMenuLabel className="font-semibold text-primary dark:text-[#4285F4]">My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator className="dark:border-[#4285F4]/10" />
                   <Link href="/profile">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5">
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/100 focus:bg-accent/80 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/10 dark:focus:bg-[#4285F4]/10">
                       <User className="mr-2 h-4 w-4 text-primary/70 dark:text-[#4285F4]" />
                       <span className="dark:text-white">Profile</span>
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/settings">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5">
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/80 focus:bg-accent/80 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/10 dark:focus:bg-[#4285F4]/10">
                       <Settings className="mr-2 h-4 w-4 text-primary/70 dark:text-[#4285F4]" />
                       <span className="dark:text-white">Settings</span>
                     </DropdownMenuItem>
                   </Link>
                   <Link href="/billing">
-                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5">
+                    <DropdownMenuItem className="cursor-pointer flex items-center hover:bg-accent/80 focus:bg-accent/80 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/10 dark:focus:bg-[#4285F4]/10">
                       <CreditCard className="mr-2 h-4 w-4 text-primary/70 dark:text-[#4285F4]" />
                       <span className="dark:text-white">Billing</span>
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuSeparator className="dark:border-[#4285F4]/10" />
                   <DropdownMenuItem
-                    className="cursor-pointer flex items-center hover:bg-accent/50 focus:bg-accent/50 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/5 dark:focus:bg-[#4285F4]/5"
+                    className="cursor-pointer flex items-center hover:bg-accent/80 focus:bg-accent/80 rounded-lg transition duration-200 py-2 dark:hover:bg-[#4285F4]/10 dark:focus:bg-[#4285F4]/10"
                     onClick={toggleTheme}
                   >
                     {theme === 'dark' ? (
